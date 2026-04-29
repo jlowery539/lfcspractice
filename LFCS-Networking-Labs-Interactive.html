@@ -1,0 +1,3559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LFCS Networking Lab Exercises — Interactive Manual</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:#f1f5f9;color:#1e293b;display:flex;height:100vh;overflow:hidden}
+#sidebar{
+  width:320px;min-width:320px;max-width:320px;
+  background:linear-gradient(180deg,#0f172a 0%,#1e293b 100%);
+  color:#cbd5e1;display:flex;flex-direction:column;height:100vh;
+  border-right:1px solid #334155;z-index:50;transition:transform .3s ease;
+}
+#sidebar-header{padding:20px 18px 14px;border-bottom:1px solid #334155}
+#sidebar-header h1{font-family:'Courier New',Consolas,monospace;font-size:17px;font-weight:700;color:#38bdf8;letter-spacing:.5px;margin-bottom:2px}
+#sidebar-header p{font-size:11px;color:#64748b}
+#search-box{
+  width:100%;padding:8px 12px;margin-top:12px;
+  background:#0f172a;border:1px solid #334155;border-radius:6px;
+  color:#e2e8f0;font-size:13px;outline:none;
+}
+#search-box:focus{border-color:#38bdf8}
+#search-box::placeholder{color:#475569}
+#nav-scroll{flex:1;overflow-y:auto;padding:8px 0}
+#nav-scroll::-webkit-scrollbar{width:5px}
+#nav-scroll::-webkit-scrollbar-thumb{background:#334155;border-radius:3px}
+.nav-section{margin-bottom:2px}
+.section-toggle{
+  width:100%;display:flex;align-items:center;gap:6px;
+  padding:10px 14px;border:none;background:transparent;
+  color:#94a3b8;font-size:13px;font-weight:600;cursor:pointer;
+  text-align:left;transition:background .15s,color .15s;
+}
+.section-toggle:hover{background:#1e3a5f;color:#e2e8f0}
+.section-toggle[aria-expanded="true"]{color:#38bdf8}
+.chevron{width:16px;height:16px;flex-shrink:0;transition:transform .2s}
+.section-toggle[aria-expanded="true"] .chevron{transform:rotate(90deg)}
+.section-title{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lab-badge{font-size:10px;background:#334155;color:#94a3b8;padding:1px 6px;border-radius:10px;flex-shrink:0}
+.section-labs{display:none;padding:2px 0 6px 0}
+.section-toggle[aria-expanded="true"]+.section-labs{display:block}
+.lab-link{
+  display:flex;align-items:baseline;gap:6px;
+  padding:5px 14px 5px 36px;font-size:12.5px;color:#94a3b8;
+  text-decoration:none;transition:background .15s,color .15s;line-height:1.4;
+}
+.lab-link:hover{background:#1e3a5f;color:#e2e8f0}
+.lab-link.active{background:#1e3a5f;color:#38bdf8;font-weight:600}
+.lab-num{font-weight:700;color:#64748b;white-space:nowrap;min-width:42px;font-size:11px}
+.lab-link.active .lab-num{color:#38bdf8}
+.lab-link.completed .lab-num::after{content:" ✓";color:#22c55e}
+#sidebar-footer{padding:14px 18px;border-top:1px solid #334155;font-size:12px}
+#progress-bar-bg{width:100%;height:6px;background:#334155;border-radius:3px;margin-top:6px}
+#progress-bar{height:100%;background:#22c55e;border-radius:3px;transition:width .3s}
+#main{flex:1;overflow-y:auto;scroll-behavior:smooth}
+#content-wrap{max-width:900px;margin:0 auto;padding:32px 40px 80px}
+#content-wrap h1{
+  font-size:22px;font-weight:800;margin:40px 0 6px;color:#0f172a;
+  border-left:4px solid #3b82f6;padding-left:14px;
+}
+#content-wrap h1:first-child{margin-top:0}
+#content-wrap h2{
+  font-size:17px;font-weight:700;color:#1e293b;
+  margin:32px 0 8px;padding:14px 16px 10px;
+  background:#fff;border-radius:8px 8px 0 0;
+  border-bottom:1px solid #e2e8f0;position:relative;
+}
+#content-wrap h2 .cb-wrap{position:absolute;right:14px;top:50%;transform:translateY(-50%)}
+#content-wrap .section-overview{
+  font-style:italic;color:#475569;margin-bottom:18px;
+  padding:10px 14px;border-left:3px solid #3b82f6;background:#eff6ff;border-radius:4px;font-size:14px;
+}
+#content-wrap p{font-size:14px;line-height:1.7;margin-bottom:8px}
+#content-wrap strong{color:#0f172a}
+#content-wrap ul,#content-wrap ol{font-size:14px;line-height:1.7;padding-left:28px;margin-bottom:10px}
+#content-wrap li{margin-bottom:5px}
+#content-wrap h4{font-size:14px;font-weight:700;margin:14px 0 6px;color:#334155}
+#content-wrap code{
+  font-family:'Courier New',Consolas,monospace;font-size:12.5px;
+  background:#f1f5f9;padding:1px 5px;border-radius:3px;color:#be185d;
+}
+#content-wrap pre{
+  position:relative;font-family:'Courier New',Consolas,monospace;font-size:12.5px;
+  background:#1e1e2e;color:#cdd6f4;border-radius:6px;
+  padding:14px 16px;margin:8px 0 12px;line-height:1.5;
+  overflow-x:auto;white-space:pre-wrap;word-wrap:break-word;
+}
+#content-wrap pre code{background:transparent;color:inherit;padding:0;font-size:inherit}
+.copy-btn{
+  position:absolute;top:6px;right:6px;
+  background:#334155;color:#94a3b8;border:none;border-radius:4px;
+  padding:3px 8px;font-size:11px;cursor:pointer;opacity:0;transition:opacity .2s;
+}
+pre:hover .copy-btn{opacity:1}
+.copy-btn:hover{background:#475569;color:#e2e8f0}
+.copy-btn.copied{background:#22c55e;color:#fff}
+.expected-outcome{
+  background:#f0fdf4;border-left:4px solid #22c55e;border-radius:0 0 8px 8px;
+  padding:12px 16px;margin-bottom:28px;
+}
+.expected-outcome h4{color:#166534;margin-top:0}
+.expected-outcome p{color:#15803d;font-size:13.5px}
+.lab-separator{border:none;margin:0}
+.callout{border-radius:6px;padding:14px 16px;margin:14px 0;font-size:13.5px}
+.callout-tip{background:#eff6ff;border-left:4px solid #3b82f6}
+.callout-important{background:#fef9c3;border-left:4px solid #eab308}
+.callout-note{background:#f1f5f9;border-left:4px solid #64748b}
+.callout-label{font-weight:700;margin-bottom:4px}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px;border-radius:6px;overflow:hidden}
+th{background:#e2e8f0;font-weight:700;text-align:left;padding:8px 12px;border:1px solid #cbd5e1}
+td{padding:8px 12px;border:1px solid #e2e8f0;vertical-align:top}
+tr:nth-child(even){background:#f8fafc}
+.lab-check{width:18px;height:18px;cursor:pointer;accent-color:#22c55e}
+#btt{
+  position:fixed;bottom:24px;right:24px;width:42px;height:42px;
+  border-radius:50%;background:#3b82f6;color:#fff;border:none;
+  font-size:20px;cursor:pointer;display:none;
+  box-shadow:0 4px 12px rgba(0,0,0,.25);z-index:40;transition:opacity .2s;
+}
+#btt:hover{background:#2563eb}
+#hamburger{display:none;position:fixed;top:12px;left:12px;z-index:60;
+  background:#1e293b;color:#e2e8f0;border:none;border-radius:6px;
+  padding:8px 10px;font-size:18px;cursor:pointer}
+#overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:45}
+@media(max-width:768px){
+  #sidebar{position:fixed;left:0;top:0;transform:translateX(-100%);width:300px;min-width:0}
+  #sidebar.open{transform:translateX(0)}
+  #hamburger{display:block}
+  #overlay.show{display:block}
+  #content-wrap{padding:24px 16px 80px}
+}
+</style>
+</head>
+<body>
+<button id="hamburger" onclick="document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('show')">☰</button>
+<div id="overlay" onclick="document.getElementById('sidebar').classList.remove('open');this.classList.remove('show')"></div>
+<nav id="sidebar">
+  <div id="sidebar-header">
+    <h1>$ LFCS_Labs</h1>
+    <p>100 Networking Exercises</p>
+    <input id="search-box" type="text" placeholder="🔍  Search labs…" oninput="filterLabs(this.value)">
+  </div>
+  <div id="nav-scroll">
+    <a href="#introduction" class="lab-link" style="padding-left:14px;margin:6px 0;font-weight:600;color:#94a3b8">📖 Introduction</a>
+
+<div class="nav-section" data-section="1">
+  <button class="section-toggle" aria-expanded="false" onclick="toggleSection(this)">
+    <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/></svg>
+    <span class="section-title">IPv4 Configuration (Labs 1–8)</span>
+    <span class="lab-badge">1–8</span>
+  </button>
+  <div class="section-labs"><a href="#lab-1" class="lab-link" data-lab="1"><span class="lab-num">Lab 1</span>Displaying Current IPv4 Configuration</a>
+<a href="#lab-2" class="lab-link" data-lab="2"><span class="lab-num">Lab 2</span>Configuring a Static IPv4 Address with nmcli</a>
+<a href="#lab-3" class="lab-link" data-lab="3"><span class="lab-num">Lab 3</span>Configuring a Static IPv4 Address with Netplan (Ubuntu)</a>
+<a href="#lab-4" class="lab-link" data-lab="4"><span class="lab-num">Lab 4</span>Configuring DHCP Client</a>
+<a href="#lab-5" class="lab-link" data-lab="5"><span class="lab-num">Lab 5</span>Adding Multiple IPv4 Addresses to a Single Interface</a>
+<a href="#lab-6" class="lab-link" data-lab="6"><span class="lab-num">Lab 6</span>Configuring Custom Subnet Masks</a>
+<a href="#lab-7" class="lab-link" data-lab="7"><span class="lab-num">Lab 7</span>Disabling and Enabling Network Interfaces</a>
+<a href="#lab-8" class="lab-link" data-lab="8"><span class="lab-num">Lab 8</span>Configuring Persistent Static Routes for IPv4</a></div>
+</div>
+
+<div class="nav-section" data-section="2">
+  <button class="section-toggle" aria-expanded="false" onclick="toggleSection(this)">
+    <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/></svg>
+    <span class="section-title">IPv6 Configuration (Labs 9–15)</span>
+    <span class="lab-badge">9–15</span>
+  </button>
+  <div class="section-labs"><a href="#lab-9" class="lab-link" data-lab="9"><span class="lab-num">Lab 9</span>Viewing IPv6 Addresses and Understanding Address Types</a>
+<a href="#lab-10" class="lab-link" data-lab="10"><span class="lab-num">Lab 10</span>Configuring a Static Global IPv6 Address</a>
+<a href="#lab-11" class="lab-link" data-lab="11"><span class="lab-num">Lab 11</span>Configuring IPv6 with SLAAC</a>
+<a href="#lab-12" class="lab-link" data-lab="12"><span class="lab-num">Lab 12</span>Setting Up a Dual-Stack (IPv4 + IPv6) Interface</a>
+<a href="#lab-13" class="lab-link" data-lab="13"><span class="lab-num">Lab 13</span>Disabling IPv6 on a Specific Interface</a>
+<a href="#lab-14" class="lab-link" data-lab="14"><span class="lab-num">Lab 14</span>Testing IPv6 Connectivity with ping6 and traceroute6</a>
+<a href="#lab-15" class="lab-link" data-lab="15"><span class="lab-num">Lab 15</span>Configuring IPv6 Static Routes</a></div>
+</div>
+
+<div class="nav-section" data-section="3">
+  <button class="section-toggle" aria-expanded="false" onclick="toggleSection(this)">
+    <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/></svg>
+    <span class="section-title">Hostname Resolution (Labs 16–22)</span>
+    <span class="lab-badge">16–22</span>
+  </button>
+  <div class="section-labs"><a href="#lab-16" class="lab-link" data-lab="16"><span class="lab-num">Lab 16</span>Setting and Verifying the System Hostname</a>
+<a href="#lab-17" class="lab-link" data-lab="17"><span class="lab-num">Lab 17</span>Configuring Local Name Resolution with /etc/hosts</a>
+<a href="#lab-18" class="lab-link" data-lab="18"><span class="lab-num">Lab 18</span>Configuring DNS Client Settings with /etc/resolv.conf</a>
+<a href="#lab-19" class="lab-link" data-lab="19"><span class="lab-num">Lab 19</span>Understanding and Configuring NSS with /etc/nsswitch.conf</a>
+<a href="#lab-20" class="lab-link" data-lab="20"><span class="lab-num">Lab 20</span>Using dig, nslookup, and host for DNS Troubleshooting</a>
+<a href="#lab-21" class="lab-link" data-lab="21"><span class="lab-num">Lab 21</span>Configuring systemd-resolved for DNS</a>
+<a href="#lab-22" class="lab-link" data-lab="22"><span class="lab-num">Lab 22</span>Implementing Split DNS with Multiple Network Connections</a></div>
+</div>
+
+<div class="nav-section" data-section="4">
+  <button class="section-toggle" aria-expanded="false" onclick="toggleSection(this)">
+    <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/></svg>
+    <span class="section-title">NTP Time Synchronization (Labs 23–28)</span>
+    <span class="lab-badge">23–28</span>
+  </button>
+  <div class="section-labs"><a href="#lab-23" class="lab-link" data-lab="23"><span class="lab-num">Lab 23</span>Checking Current Time and Timezone Settings</a>
+<a href="#lab-24" class="lab-link" data-lab="24"><span class="lab-num">Lab 24</span>Setting the System Timezone</a>
+<a href="#lab-25" class="lab-link" data-lab="25"><span class="lab-num">Lab 25</span>Configuring Time Synchronization with chronyd</a>
+<a href="#lab-26" class="lab-link" data-lab="26"><span class="lab-num">Lab 26</span>Configuring Time Synchronization with systemd-timesyncd</a>
+<a href="#lab-27" class="lab-link" data-lab="27"><span class="lab-num">Lab 27</span>Setting Up a Local NTP Server with chronyd</a>
+<a href="#lab-28" class="lab-link" data-lab="28"><span class="lab-num">Lab 28</span>Manually Setting Time and Disabling NTP</a></div>
+</div>
+
+<div class="nav-section" data-section="5">
+  <button class="section-toggle" aria-expanded="false" onclick="toggleSection(this)">
+    <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/></svg>
+    <span class="section-title">Network Monitoring and Troubleshooting (Labs 29–40)</span>
+    <span class="lab-badge">29–40</span>
+  </button>
+  <div class="section-labs"><a href="#lab-29" class="lab-link" data-lab="29"><span class="lab-num">Lab 29</span>Basic Connectivity Testing with ping</a>
+<a href="#lab-30" class="lab-link" data-lab="30"><span class="lab-num">Lab 30</span>Tracing Network Paths with traceroute and tracepath</a>
+<a href="#lab-31" class="lab-link" data-lab="31"><span class="lab-num">Lab 31</span>Inspecting Active Connections with ss</a>
+<a href="#lab-32" class="lab-link" data-lab="32"><span class="lab-num">Lab 32</span>Capturing Network Traffic with tcpdump</a>
+<a href="#lab-33" class="lab-link" data-lab="33"><span class="lab-num">Lab 33</span>Network Scanning with nmap</a>
+<a href="#lab-34" class="lab-link" data-lab="34"><span class="lab-num">Lab 34</span>Monitoring Network Interfaces with ip and ethtool</a>
+<a href="#lab-35" class="lab-link" data-lab="35"><span class="lab-num">Lab 35</span>Bandwidth Testing with iperf3</a>
+<a href="#lab-36" class="lab-link" data-lab="36"><span class="lab-num">Lab 36</span>Continuous Network Diagnostics with mtr</a>
+<a href="#lab-37" class="lab-link" data-lab="37"><span class="lab-num">Lab 37</span>Monitoring DNS Resolution Performance</a>
+<a href="#lab-38" class="lab-link" data-lab="38"><span class="lab-num">Lab 38</span>Analyzing Network Connections with netstat</a>
+<a href="#lab-39" class="lab-link" data-lab="39"><span class="lab-num">Lab 39</span>Monitoring Real-Time Network Traffic with nload and iftop</a>
+<a href="#lab-40" class="lab-link" data-lab="40"><span class="lab-num">Lab 40</span>Troubleshooting a Complete Network Connectivity Issue</a></div>
+</div>
+
+<div class="nav-section" data-section="6">
+  <button class="section-toggle" aria-expanded="false" onclick="toggleSection(this)">
+    <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/></svg>
+    <span class="section-title">OpenSSH Server and Client Configuration (Labs 41–52)</span>
+    <span class="lab-badge">41–52</span>
+  </button>
+  <div class="section-labs"><a href="#lab-41" class="lab-link" data-lab="41"><span class="lab-num">Lab 41</span>Installing and Starting the OpenSSH Server</a>
+<a href="#lab-42" class="lab-link" data-lab="42"><span class="lab-num">Lab 42</span>Connecting with the SSH Client</a>
+<a href="#lab-43" class="lab-link" data-lab="43"><span class="lab-num">Lab 43</span>Generating SSH Key Pairs</a>
+<a href="#lab-44" class="lab-link" data-lab="44"><span class="lab-num">Lab 44</span>Configuring Key-Based Authentication</a>
+<a href="#lab-45" class="lab-link" data-lab="45"><span class="lab-num">Lab 45</span>Hardening the SSH Server Configuration</a>
+<a href="#lab-46" class="lab-link" data-lab="46"><span class="lab-num">Lab 46</span>Changing the SSH Listening Port</a>
+<a href="#lab-47" class="lab-link" data-lab="47"><span class="lab-num">Lab 47</span>Using SSH Config File for Connection Profiles</a>
+<a href="#lab-48" class="lab-link" data-lab="48"><span class="lab-num">Lab 48</span>Transferring Files with SCP</a>
+<a href="#lab-49" class="lab-link" data-lab="49"><span class="lab-num">Lab 49</span>Using SFTP for Interactive File Transfer</a>
+<a href="#lab-50" class="lab-link" data-lab="50"><span class="lab-num">Lab 50</span>Setting Up SSH Local Port Forwarding (Tunnel)</a>
+<a href="#lab-51" class="lab-link" data-lab="51"><span class="lab-num">Lab 51</span>Setting Up SSH Remote Port Forwarding</a>
+<a href="#lab-52" class="lab-link" data-lab="52"><span class="lab-num">Lab 52</span>Using SSH Agent for Key Management</a></div>
+</div>
+
+<div class="nav-section" data-section="7">
+  <button class="section-toggle" aria-expanded="false" onclick="toggleSection(this)">
+    <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/></svg>
+    <span class="section-title">Packet Filtering (Labs 53–62)</span>
+    <span class="lab-badge">53–62</span>
+  </button>
+  <div class="section-labs"><a href="#lab-53" class="lab-link" data-lab="53"><span class="lab-num">Lab 53</span>Viewing Current Firewall Rules with iptables</a>
+<a href="#lab-54" class="lab-link" data-lab="54"><span class="lab-num">Lab 54</span>Allowing and Blocking Ports with iptables</a>
+<a href="#lab-55" class="lab-link" data-lab="55"><span class="lab-num">Lab 55</span>Saving and Restoring iptables Rules</a>
+<a href="#lab-56" class="lab-link" data-lab="56"><span class="lab-num">Lab 56</span>Blocking Specific IP Addresses with iptables</a>
+<a href="#lab-57" class="lab-link" data-lab="57"><span class="lab-num">Lab 57</span>Rate Limiting Connections with iptables</a>
+<a href="#lab-58" class="lab-link" data-lab="58"><span class="lab-num">Lab 58</span>Managing Firewall with firewalld</a>
+<a href="#lab-59" class="lab-link" data-lab="59"><span class="lab-num">Lab 59</span>Creating Custom firewalld Zones</a>
+<a href="#lab-60" class="lab-link" data-lab="60"><span class="lab-num">Lab 60</span>Introduction to nftables</a>
+<a href="#lab-61" class="lab-link" data-lab="61"><span class="lab-num">Lab 61</span>Persisting nftables Rules</a>
+<a href="#lab-62" class="lab-link" data-lab="62"><span class="lab-num">Lab 62</span>Logging and Monitoring Dropped Packets</a></div>
+</div>
+
+<div class="nav-section" data-section="8">
+  <button class="section-toggle" aria-expanded="false" onclick="toggleSection(this)">
+    <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/></svg>
+    <span class="section-title">Port Redirection (Labs 63–68)</span>
+    <span class="lab-badge">63–68</span>
+  </button>
+  <div class="section-labs"><a href="#lab-63" class="lab-link" data-lab="63"><span class="lab-num">Lab 63</span>Port Redirection with iptables REDIRECT</a>
+<a href="#lab-64" class="lab-link" data-lab="64"><span class="lab-num">Lab 64</span>Port Forwarding with iptables DNAT</a>
+<a href="#lab-65" class="lab-link" data-lab="65"><span class="lab-num">Lab 65</span>Port Forwarding with firewalld</a>
+<a href="#lab-66" class="lab-link" data-lab="66"><span class="lab-num">Lab 66</span>Port Forwarding with nftables</a>
+<a href="#lab-67" class="lab-link" data-lab="67"><span class="lab-num">Lab 67</span>Port Redirection with socat</a>
+<a href="#lab-68" class="lab-link" data-lab="68"><span class="lab-num">Lab 68</span>Testing and Verifying Port Redirections</a></div>
+</div>
+
+<div class="nav-section" data-section="9">
+  <button class="section-toggle" aria-expanded="false" onclick="toggleSection(this)">
+    <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/></svg>
+    <span class="section-title">Network Address Translation — NAT (Labs 69–74)</span>
+    <span class="lab-badge">69–74</span>
+  </button>
+  <div class="section-labs"><a href="#lab-69" class="lab-link" data-lab="69"><span class="lab-num">Lab 69</span>Understanding NAT Concepts</a>
+<a href="#lab-70" class="lab-link" data-lab="70"><span class="lab-num">Lab 70</span>Configuring Source NAT (MASQUERADE) with iptables</a>
+<a href="#lab-71" class="lab-link" data-lab="71"><span class="lab-num">Lab 71</span>Configuring SNAT with a Static IP</a>
+<a href="#lab-72" class="lab-link" data-lab="72"><span class="lab-num">Lab 72</span>Configuring NAT with nftables</a>
+<a href="#lab-73" class="lab-link" data-lab="73"><span class="lab-num">Lab 73</span>Configuring NAT with firewalld</a>
+<a href="#lab-74" class="lab-link" data-lab="74"><span class="lab-num">Lab 74</span>NAT Troubleshooting and Connection Tracking</a></div>
+</div>
+
+<div class="nav-section" data-section="10">
+  <button class="section-toggle" aria-expanded="false" onclick="toggleSection(this)">
+    <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/></svg>
+    <span class="section-title">Static Routing (Labs 75–80)</span>
+    <span class="lab-badge">75–80</span>
+  </button>
+  <div class="section-labs"><a href="#lab-75" class="lab-link" data-lab="75"><span class="lab-num">Lab 75</span>Viewing and Understanding the Routing Table</a>
+<a href="#lab-76" class="lab-link" data-lab="76"><span class="lab-num">Lab 76</span>Adding and Deleting Static Routes Temporarily</a>
+<a href="#lab-77" class="lab-link" data-lab="77"><span class="lab-num">Lab 77</span>Configuring Persistent Static Routes</a>
+<a href="#lab-78" class="lab-link" data-lab="78"><span class="lab-num">Lab 78</span>Building a Multi-Segment Routed Lab Network</a>
+<a href="#lab-79" class="lab-link" data-lab="79"><span class="lab-num">Lab 79</span>Configuring a Default Gateway</a>
+<a href="#lab-80" class="lab-link" data-lab="80"><span class="lab-num">Lab 80</span>Troubleshooting Routing Issues</a></div>
+</div>
+
+<div class="nav-section" data-section="11">
+  <button class="section-toggle" aria-expanded="false" onclick="toggleSection(this)">
+    <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/></svg>
+    <span class="section-title">Network Bridges (Labs 81–86)</span>
+    <span class="lab-badge">81–86</span>
+  </button>
+  <div class="section-labs"><a href="#lab-81" class="lab-link" data-lab="81"><span class="lab-num">Lab 81</span>Creating a Network Bridge with nmcli</a>
+<a href="#lab-82" class="lab-link" data-lab="82"><span class="lab-num">Lab 82</span>Creating a Bridge with the ip and brctl Commands</a>
+<a href="#lab-83" class="lab-link" data-lab="83"><span class="lab-num">Lab 83</span>Bridging Two Network Interfaces</a>
+<a href="#lab-84" class="lab-link" data-lab="84"><span class="lab-num">Lab 84</span>Configuring STP on a Linux Bridge</a>
+<a href="#lab-85" class="lab-link" data-lab="85"><span class="lab-num">Lab 85</span>Creating a Bridge for KVM/QEMU Virtual Machines</a>
+<a href="#lab-86" class="lab-link" data-lab="86"><span class="lab-num">Lab 86</span>Persistent Bridge Configuration with Netplan (Ubuntu)</a></div>
+</div>
+
+<div class="nav-section" data-section="12">
+  <button class="section-toggle" aria-expanded="false" onclick="toggleSection(this)">
+    <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/></svg>
+    <span class="section-title">Bonding Interfaces (Labs 87–91)</span>
+    <span class="lab-badge">87–91</span>
+  </button>
+  <div class="section-labs"><a href="#lab-87" class="lab-link" data-lab="87"><span class="lab-num">Lab 87</span>Creating a Bond Interface with nmcli (Mode 1 — Active-Backup)</a>
+<a href="#lab-88" class="lab-link" data-lab="88"><span class="lab-num">Lab 88</span>Configuring Bond Mode 0 (Balance Round-Robin)</a>
+<a href="#lab-89" class="lab-link" data-lab="89"><span class="lab-num">Lab 89</span>Configuring Bond Mode 4 (802.3ad / LACP)</a>
+<a href="#lab-90" class="lab-link" data-lab="90"><span class="lab-num">Lab 90</span>Testing Bond Failover</a>
+<a href="#lab-91" class="lab-link" data-lab="91"><span class="lab-num">Lab 91</span>Bonding with VLAN Tagging</a></div>
+</div>
+
+<div class="nav-section" data-section="13">
+  <button class="section-toggle" aria-expanded="false" onclick="toggleSection(this)">
+    <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/></svg>
+    <span class="section-title">Reverse Proxies (Labs 92–96)</span>
+    <span class="lab-badge">92–96</span>
+  </button>
+  <div class="section-labs"><a href="#lab-92" class="lab-link" data-lab="92"><span class="lab-num">Lab 92</span>Installing and Configuring Nginx as a Basic Reverse Proxy</a>
+<a href="#lab-93" class="lab-link" data-lab="93"><span class="lab-num">Lab 93</span>Configuring Nginx Reverse Proxy with Multiple Backends (Path-Based)</a>
+<a href="#lab-94" class="lab-link" data-lab="94"><span class="lab-num">Lab 94</span>Setting Up TLS Termination with Nginx</a>
+<a href="#lab-95" class="lab-link" data-lab="95"><span class="lab-num">Lab 95</span>Configuring Apache as a Reverse Proxy</a>
+<a href="#lab-96" class="lab-link" data-lab="96"><span class="lab-num">Lab 96</span>Adding Access Control to a Reverse Proxy</a></div>
+</div>
+
+<div class="nav-section" data-section="14">
+  <button class="section-toggle" aria-expanded="false" onclick="toggleSection(this)">
+    <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/></svg>
+    <span class="section-title">Load Balancers (Labs 97–100)</span>
+    <span class="lab-badge">97–100</span>
+  </button>
+  <div class="section-labs"><a href="#lab-97" class="lab-link" data-lab="97"><span class="lab-num">Lab 97</span>Configuring Nginx as a Round-Robin HTTP Load Balancer</a>
+<a href="#lab-98" class="lab-link" data-lab="98"><span class="lab-num">Lab 98</span>Configuring Nginx Load Balancer with Weighted and Least-Connections Methods</a>
+<a href="#lab-99" class="lab-link" data-lab="99"><span class="lab-num">Lab 99</span>Installing and Configuring HAProxy as a Load Balancer</a>
+<a href="#lab-100" class="lab-link" data-lab="100"><span class="lab-num">Lab 100</span>HAProxy with Session Persistence and SSL Termination</a></div>
+</div>
+    <a href="#conclusion" class="lab-link" style="padding-left:14px;margin:6px 0;font-weight:600;color:#94a3b8">🎓 Conclusion</a>
+  </div>
+  <div id="sidebar-footer">
+    <span id="progress-text">0 / 100 labs completed</span>
+    <div id="progress-bar-bg"><div id="progress-bar" style="width:0%"></div></div>
+  </div>
+</nav>
+<main id="main">
+  <div id="content-wrap">
+
+<!-- ============================================================ -->
+<!-- TITLE BLOCK -->
+<!-- ============================================================ -->
+
+
+<!-- ============================================================ -->
+<!-- TABLE OF CONTENTS -->
+<!-- ============================================================ -->
+
+
+
+<!-- ============================================================ -->
+<!-- INTRODUCTION -->
+<!-- ============================================================ -->
+<h1 id="introduction">Introduction</h1>
+<h2>Purpose of This Lab Manual</h2>
+<p>This manual provides 100 structured, hands-on lab exercises covering the <strong>Networking</strong> domain of the Linux Foundation Certified System Administrator (LFCS) exam. Each lab is designed to be completed inside Linux virtual machines, giving you safe, repeatable environments to practice real-world networking tasks without risking production systems.</p>
+<p>The labs progress from foundational IPv4/IPv6 configuration through advanced topics such as NAT, load balancing, and reverse proxies. By completing all 100 labs, you will develop the practical networking skills required to pass the LFCS exam and to administer Linux networks in professional environments.</p>
+<h2>Prerequisites</h2>
+<ul>
+<li><strong>Hypervisor:</strong> A working virtualization platform such as VirtualBox, KVM/libvirt, or VMware Workstation.</li>
+<li><strong>Virtual Machines:</strong> At least two VMs — one running CentOS/RHEL 9 and one running Ubuntu 22.04 or 24.04. Many labs require a second (or third) VM as a peer, router, or server. Create snapshots before each lab for easy rollback.</li>
+<li><strong>Networking:</strong> VMs should be configured with at least one NAT adapter (for internet access) and one Host-Only or Internal Network adapter (for inter-VM communication).</li>
+<li><strong>Basic Linux Knowledge:</strong> Comfort with the Linux command line, file editing with <code>vi</code>/<code>nano</code>, package installation (<code>dnf</code>/<code>apt</code>), and <code>systemctl</code> for service management.</li>
+<li><strong>Root or Sudo Access:</strong> All labs assume you have <code>sudo</code> privileges or are logged in as root.</li>
+</ul>
+<h2>How to Use the Labs</h2>
+<ol>
+<li><strong>Read the Objective</strong> to understand what the lab teaches.</li>
+<li><strong>Check Prerequisites/Environment</strong> to ensure your VMs are properly configured.</li>
+<li><strong>Follow the Step-by-Step Procedure</strong> carefully, typing each command exactly as shown.</li>
+<li><strong>Verify the Expected Outcome</strong> at the end of each lab to confirm success.</li>
+<li><strong>Experiment:</strong> After completing a lab, modify parameters, break configurations deliberately, and troubleshoot — this deepens your understanding.</li>
+</ol>
+<div class="callout callout-tip">
+<p class="callout-label">Tip</p>
+<p>Take VM snapshots before each lab. If something goes wrong, you can revert instantly and try again. Label snapshots clearly (e.g., "Before Lab 12").</p>
+</div>
+<div class="callout callout-important">
+<p class="callout-label">Important</p>
+<p>Commands prefixed with <code>sudo</code> require elevated privileges. On RHEL/CentOS, many labs use <code>dnf</code> for package management. On Ubuntu, use <code>apt</code>. The labs note distribution-specific differences where applicable.</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 1: IPv4 CONFIGURATION (Labs 1–8) -->
+<!-- ============================================================ -->
+<h1 id="section-1">Section 1: IPv4 Configuration (Labs 1–8)</h1>
+<p class="section-overview">Covers static and dynamic IPv4 addressing, subnet configuration, multiple IPs, and persistent network settings using nmcli, ip, and Netplan.</p>
+<!-- Lab 1 -->
+<h2 id="lab-1">Lab 1: Displaying Current IPv4 Configuration</h2>
+<p><strong>Objective:</strong> View all current IPv4 addresses, subnet masks, and default gateways on all network interfaces.</p>
+<p><strong>Environment:</strong> Any Linux VM (CentOS/RHEL 9 or Ubuntu 22.04/24.04) with at least one active network interface.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Display all IP addresses and interface details:
+        <pre>ip addr show</pre>
+        Examine the output. Each interface section begins with a number and interface name (e.g., <code>2: eth0</code>). Look for <code>inet</code> lines showing IPv4 addresses in CIDR notation (e.g., <code>192.168.1.10/24</code>).
+    </li>
+<li>Display the routing table to find default gateways and connected routes:
+        <pre>ip route show</pre>
+        The line beginning with <code>default via</code> indicates your default gateway.
+    </li>
+<li>Display detailed device information via NetworkManager:
+        <pre>nmcli device show</pre>
+        This shows IP addresses, gateways, DNS servers, and connection state for each interface managed by NetworkManager.
+    </li>
+<li>View configured DNS servers:
+        <pre>cat /etc/resolv.conf</pre>
+        Look for <code>nameserver</code> entries listing DNS resolver IP addresses.
+    </li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>You see interface names (e.g., <code>eth0</code>, <code>enp0s3</code>), IPv4 addresses with CIDR notation, a default gateway in the routing table, and DNS server entries in <code>/etc/resolv.conf</code>. You can identify which interface connects to which network segment.</p>
+</div>
+<!-- Lab 2 -->
+<div class="lab-separator"></div>
+<h2 id="lab-2">Lab 2: Configuring a Static IPv4 Address with nmcli</h2>
+<p><strong>Objective:</strong> Assign a static IPv4 address to a network interface using NetworkManager's command-line tool.</p>
+<p><strong>Environment:</strong> CentOS/RHEL 9 or Ubuntu with NetworkManager active. Identify your connection name first.</p>
+<h4>Procedure</h4>
+<ol>
+<li>List all NetworkManager connections to find your connection name:
+        <pre>nmcli con show</pre>
+</li>
+<li>Modify the connection to use a static IPv4 address (replace <code>enp0s8</code> with your connection name):
+        <pre>sudo nmcli con mod enp0s8 ipv4.addresses 192.168.1.100/24
+sudo nmcli con mod enp0s8 ipv4.gateway 192.168.1.1
+sudo nmcli con mod enp0s8 ipv4.dns "8.8.8.8"
+sudo nmcli con mod enp0s8 ipv4.method manual</pre>
+</li>
+<li>Bring the connection down and back up to apply changes:
+        <pre>sudo nmcli con down enp0s8
+sudo nmcli con up enp0s8</pre>
+</li>
+<li>Verify the new static configuration:
+        <pre>ip addr show dev enp0s8
+ip route show
+cat /etc/resolv.conf</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>The interface displays IP address <code>192.168.1.100/24</code>. The routing table shows the default gateway as <code>192.168.1.1</code>. DNS resolution to <code>8.8.8.8</code> is confirmed in <code>/etc/resolv.conf</code>.</p>
+</div>
+<!-- Lab 3 -->
+<div class="lab-separator"></div>
+<h2 id="lab-3">Lab 3: Configuring a Static IPv4 Address with Netplan (Ubuntu)</h2>
+<p><strong>Objective:</strong> Configure a static IPv4 address using Netplan YAML files on Ubuntu.</p>
+<p><strong>Environment:</strong> Ubuntu 22.04 or 24.04 VM with Netplan as the network configuration renderer.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Open the Netplan configuration file for editing:
+        <pre>sudo nano /etc/netplan/01-netcfg.yaml</pre>
+</li>
+<li>Replace or add the following content (adjust the interface name as needed):
+        <pre>network:
+  version: 2
+  ethernets:
+    enp0s8:
+      dhcp4: false
+      addresses:
+        - 10.0.0.50/24
+      routes:
+        - to: default
+          via: 10.0.0.1
+      nameservers:
+        addresses:
+          - 8.8.8.8
+          - 8.8.4.4</pre>
+</li>
+<li>Apply the Netplan configuration:
+        <pre>sudo netplan apply</pre>
+</li>
+<li>Verify the configuration:
+        <pre>ip addr show dev enp0s8
+ip route show</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>The Ubuntu system displays the static IP <code>10.0.0.50/24</code> on the configured interface, and the routing table shows the default gateway as <code>10.0.0.1</code>.</p>
+</div>
+<!-- Lab 4 -->
+<div class="lab-separator"></div>
+<h2 id="lab-4">Lab 4: Configuring DHCP Client</h2>
+<p><strong>Objective:</strong> Set a network interface to obtain its IPv4 address automatically via DHCP.</p>
+<p><strong>Environment:</strong> A Linux VM with access to a DHCP server (the hypervisor's NAT adapter typically provides one).</p>
+<h4>Procedure</h4>
+<ol>
+<li>On CentOS/RHEL, switch the connection to DHCP and remove any static settings:
+        <pre>sudo nmcli con mod enp0s8 ipv4.method auto
+sudo nmcli con mod enp0s8 ipv4.addresses ""
+sudo nmcli con mod enp0s8 ipv4.gateway ""
+sudo nmcli con mod enp0s8 ipv4.dns ""
+sudo nmcli con up enp0s8</pre>
+</li>
+<li>On Ubuntu with Netplan, edit the configuration file to enable DHCP:
+        <pre>network:
+  version: 2
+  ethernets:
+    enp0s8:
+      dhcp4: true</pre>
+        Apply with:
+        <pre>sudo netplan apply</pre>
+</li>
+<li>Verify the dynamically assigned address:
+        <pre>ip addr show dev enp0s8</pre>
+</li>
+<li>Check DHCP lease information:
+        <pre>ls /var/lib/dhclient/
+cat /var/lib/dhcp/dhclient.leases</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>The interface acquires an IP address from the DHCP server. A DHCP lease file is created showing the lease duration, assigned IP, and DHCP server address.</p>
+</div>
+<!-- Lab 5 -->
+<div class="lab-separator"></div>
+<h2 id="lab-5">Lab 5: Adding Multiple IPv4 Addresses to a Single Interface</h2>
+<p><strong>Objective:</strong> Configure secondary (alias) IPv4 addresses on a single network interface.</p>
+<p><strong>Environment:</strong> Any Linux VM. A second VM on the same network segment is useful for testing reachability.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Add a persistent secondary IP address using nmcli:
+        <pre>sudo nmcli con mod enp0s8 +ipv4.addresses 192.168.1.200/24
+sudo nmcli con up enp0s8</pre>
+</li>
+<li>Alternatively, add a temporary IP address using the <code>ip</code> command (lost on reboot):
+        <pre>sudo ip addr add 192.168.1.201/24 dev enp0s8</pre>
+</li>
+<li>Verify that all addresses are assigned to the interface:
+        <pre>ip addr show dev enp0s8</pre>
+</li>
+<li>From another VM on the same network, test reachability to both addresses:
+        <pre>ping -c 3 192.168.1.200
+ping -c 3 192.168.1.201</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>The interface displays multiple <code>inet</code> entries. Both secondary addresses respond to ping from another VM on the same subnet.</p>
+</div>
+<!-- Lab 6 -->
+<div class="lab-separator"></div>
+<h2 id="lab-6">Lab 6: Configuring Custom Subnet Masks</h2>
+<p><strong>Objective:</strong> Understand and apply non-standard subnet masks (/25, /26, /28) and observe their effect on connectivity.</p>
+<p><strong>Environment:</strong> Two Linux VMs connected to the same internal/host-only network segment.</p>
+<h4>Procedure</h4>
+<ol>
+<li>On VM1, assign an IP with a /26 subnet mask:
+        <pre>sudo nmcli con mod enp0s8 ipv4.addresses 172.16.0.10/26
+sudo nmcli con mod enp0s8 ipv4.method manual
+sudo nmcli con up enp0s8</pre>
+</li>
+<li>Calculate the network range for 172.16.0.0/26: the range is 172.16.0.0 – 172.16.0.63 (64 addresses, 62 usable hosts).</li>
+<li>On VM2, assign an IP within the same /26 range:
+        <pre>sudo nmcli con mod enp0s8 ipv4.addresses 172.16.0.20/26
+sudo nmcli con mod enp0s8 ipv4.method manual
+sudo nmcli con up enp0s8</pre>
+</li>
+<li>Test connectivity between the two VMs:
+        <pre>ping -c 3 172.16.0.20    # from VM1
+ping -c 3 172.16.0.10    # from VM2</pre>
+</li>
+<li>Now change VM2 to a /25 mask and observe:
+        <pre>sudo nmcli con mod enp0s8 ipv4.addresses 172.16.0.20/25
+sudo nmcli con up enp0s8</pre>
+        Try pinging VM1 again. Connectivity may appear to work in one direction due to mismatched subnet definitions, but routing behavior will be inconsistent.
+    </li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>VMs on the same /26 subnet ping each other successfully. When one VM is changed to /25, the subnet mismatch causes unpredictable or failed connectivity, demonstrating the importance of consistent subnet configuration.</p>
+</div>
+<!-- Lab 7 -->
+<div class="lab-separator"></div>
+<h2 id="lab-7">Lab 7: Disabling and Enabling Network Interfaces</h2>
+<p><strong>Objective:</strong> Administratively bring network interfaces up and down using both <code>ip</code> and <code>nmcli</code> commands.</p>
+<p><strong>Environment:</strong> Any Linux VM. Use a secondary interface (not your SSH session's interface) to avoid locking yourself out.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Bring an interface down using the <code>ip</code> command:
+        <pre>sudo ip link set enp0s8 down</pre>
+</li>
+<li>Verify the interface state:
+        <pre>ip link show enp0s8</pre>
+        The output should not contain the <code>UP</code> flag.
+    </li>
+<li>Bring the interface back up:
+        <pre>sudo ip link set enp0s8 up</pre>
+</li>
+<li>Alternatively, use NetworkManager to disconnect and reconnect:
+        <pre>sudo nmcli device disconnect enp0s8
+sudo nmcli device connect enp0s8</pre>
+</li>
+<li>Observe the difference: <code>ip link set down</code> only brings the link down at Layer 2, while <code>nmcli device disconnect</code> also deactivates the NetworkManager connection profile. After <code>ip link set up</code>, you may need to re-apply the connection with <code>nmcli con up</code> to restore IP configuration.</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>The interface state toggles between UP and DOWN. Network connectivity is interrupted when the interface is down and restored when it is brought back up. You understand the behavioral differences between <code>ip</code> and <code>nmcli</code> approaches.</p>
+</div>
+<!-- Lab 8 -->
+<div class="lab-separator"></div>
+<h2 id="lab-8">Lab 8: Configuring Persistent Static Routes for IPv4</h2>
+<p><strong>Objective:</strong> Add a static route that persists across reboots.</p>
+<p><strong>Environment:</strong> A Linux VM with a gateway available to forward traffic to the target network.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Add a persistent static route using nmcli:
+        <pre>sudo nmcli con mod enp0s8 +ipv4.routes "10.10.0.0/16 192.168.1.1"
+sudo nmcli con up enp0s8</pre>
+</li>
+<li>Verify the route is in the routing table:
+        <pre>ip route show</pre>
+        You should see a line like: <code>10.10.0.0/16 via 192.168.1.1 dev enp0s8</code>.
+    </li>
+<li>For comparison, add a temporary route using the <code>ip</code> command (this will not survive reboot):
+        <pre>sudo ip route add 10.20.0.0/16 via 192.168.1.1</pre>
+</li>
+<li>Reboot the VM and check routes again:
+        <pre>sudo reboot</pre>
+        After reboot:
+        <pre>ip route show</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>The nmcli-configured route (<code>10.10.0.0/16</code>) persists after reboot. The <code>ip route add</code> temporary route (<code>10.20.0.0/16</code>) is gone after reboot.</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 2: IPv6 CONFIGURATION (Labs 9–15) -->
+<!-- ============================================================ -->
+<h1 id="section-2">Section 2: IPv6 Configuration (Labs 9–15)</h1>
+<p class="section-overview">Covers IPv6 address types, static and SLAAC configuration, dual-stack setups, and IPv6 connectivity testing.</p>
+<!-- Lab 9 -->
+<h2 id="lab-9">Lab 9: Viewing IPv6 Addresses and Understanding Address Types</h2>
+<p><strong>Objective:</strong> Display and identify link-local, global, and loopback IPv6 addresses on your system.</p>
+<p><strong>Environment:</strong> Any Linux VM with IPv6 enabled (default on most distributions).</p>
+<h4>Procedure</h4>
+<ol>
+<li>Display all IPv6 addresses on all interfaces:
+        <pre>ip -6 addr show</pre>
+</li>
+<li>Identify the address types in the output:
+        <ul>
+<li><code>fe80::</code> prefix — Link-local address (auto-generated, used for local segment communication).</li>
+<li><code>::1</code> — Loopback address (IPv6 equivalent of 127.0.0.1).</li>
+<li><code>2001:</code>, <code>2600:</code>, etc. — Global unicast addresses (routable on the internet).</li>
+</ul>
+</li>
+<li>View the IPv6 routing table:
+        <pre>ip -6 route show</pre>
+</li>
+<li>Examine the address scope field in the output. Scope values include <code>link</code> (link-local), <code>global</code> (globally routable), and <code>host</code> (loopback).</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>You can identify link-local (<code>fe80::</code>), loopback (<code>::1</code>), and any global IPv6 addresses on your interfaces. You understand the meaning of each address scope.</p>
+</div>
+<!-- Lab 10 -->
+<div class="lab-separator"></div>
+<h2 id="lab-10">Lab 10: Configuring a Static Global IPv6 Address</h2>
+<p><strong>Objective:</strong> Assign a static global unicast IPv6 address to a network interface.</p>
+<p><strong>Environment:</strong> Any Linux VM with NetworkManager.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Configure a static IPv6 address using nmcli:
+        <pre>sudo nmcli con mod enp0s8 ipv6.addresses 2001:db8::10/64
+sudo nmcli con mod enp0s8 ipv6.gateway 2001:db8::1
+sudo nmcli con mod enp0s8 ipv6.method manual</pre>
+</li>
+<li>Restart the connection:
+        <pre>sudo nmcli con down enp0s8
+sudo nmcli con up enp0s8</pre>
+</li>
+<li>Verify the IPv6 address:
+        <pre>ip -6 addr show dev enp0s8</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>The interface displays the assigned global IPv6 address <code>2001:db8::10/64</code> with scope <code>global</code>. The link-local address remains present alongside the static global address.</p>
+</div>
+<!-- Lab 11 -->
+<div class="lab-separator"></div>
+<h2 id="lab-11">Lab 11: Configuring IPv6 with SLAAC</h2>
+<p><strong>Objective:</strong> Enable Stateless Address Autoconfiguration (SLAAC) to automatically obtain an IPv6 address.</p>
+<p><strong>Environment:</strong> A Linux VM on a network with an IPv6 router advertisement daemon (radvd) or another VM configured as an IPv6 router.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Set the IPv6 method to automatic (SLAAC):
+        <pre>sudo nmcli con mod enp0s8 ipv6.method auto
+sudo nmcli con up enp0s8</pre>
+</li>
+<li>If no IPv6 router is available, set up radvd on another VM. Install and configure:
+        <pre>sudo dnf install radvd    # RHEL/CentOS
+sudo apt install radvd    # Ubuntu</pre>
+        Edit <code>/etc/radvd.conf</code>:
+        <pre>interface enp0s8
+{
+    AdvSendAdvert on;
+    prefix 2001:db8::/64
+    {
+        AdvOnLink on;
+        AdvAutonomous on;
+    };
+};</pre>
+        Start radvd:
+        <pre>sudo systemctl enable --now radvd</pre>
+</li>
+<li>On the client VM, verify the auto-configured address:
+        <pre>ip -6 addr show dev enp0s8</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>The interface receives an auto-configured global IPv6 address from the <code>2001:db8::/64</code> prefix based on router advertisements. Both the SLAAC-assigned address and the link-local address are visible.</p>
+</div>
+<!-- Lab 12 -->
+<div class="lab-separator"></div>
+<h2 id="lab-12">Lab 12: Setting Up a Dual-Stack (IPv4 + IPv6) Interface</h2>
+<p><strong>Objective:</strong> Configure both IPv4 and IPv6 addresses on the same interface simultaneously.</p>
+<p><strong>Environment:</strong> A Linux VM with a peer VM configured with both IPv4 and IPv6 on the same segment.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Configure both protocols via nmcli:
+        <pre>sudo nmcli con mod enp0s8 ipv4.addresses 192.168.1.50/24
+sudo nmcli con mod enp0s8 ipv4.method manual
+sudo nmcli con mod enp0s8 ipv6.addresses 2001:db8::50/64
+sudo nmcli con mod enp0s8 ipv6.method manual
+sudo nmcli con up enp0s8</pre>
+</li>
+<li>Verify both protocols are active:
+        <pre>ip addr show dev enp0s8</pre>
+        Look for both <code>inet</code> (IPv4) and <code>inet6</code> (IPv6) entries.
+    </li>
+<li>Test IPv4 connectivity:
+        <pre>ping -c 3 192.168.1.51</pre>
+</li>
+<li>Test IPv6 connectivity:
+        <pre>ping -6 -c 3 2001:db8::51</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>The interface shows both an IPv4 address (<code>192.168.1.50/24</code>) and an IPv6 address (<code>2001:db8::50/64</code>). Both <code>ping</code> (IPv4) and <code>ping -6</code> (IPv6) succeed to their respective peers.</p>
+</div>
+<!-- Lab 13 -->
+<div class="lab-separator"></div>
+<h2 id="lab-13">Lab 13: Disabling IPv6 on a Specific Interface</h2>
+<p><strong>Objective:</strong> Disable IPv6 on a single interface using sysctl without affecting other interfaces.</p>
+<p><strong>Environment:</strong> Any Linux VM with multiple interfaces (so you can observe that disabling IPv6 on one leaves others unaffected).</p>
+<h4>Procedure</h4>
+<ol>
+<li>Disable IPv6 on a specific interface at runtime:
+        <pre>sudo sysctl -w net.ipv6.conf.enp0s8.disable_ipv6=1</pre>
+</li>
+<li>Verify that IPv6 is disabled on that interface:
+        <pre>ip -6 addr show dev enp0s8</pre>
+</li>
+<li>Confirm other interfaces still have IPv6:
+        <pre>ip -6 addr show dev enp0s3</pre>
+</li>
+<li>Make the change persistent by creating a sysctl configuration file:
+        <pre>echo "net.ipv6.conf.enp0s8.disable_ipv6 = 1" | sudo tee /etc/sysctl.d/99-disable-ipv6.conf
+sudo sysctl --system</pre>
+</li>
+<li>To re-enable IPv6 later:
+        <pre>sudo sysctl -w net.ipv6.conf.enp0s8.disable_ipv6=0</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>No IPv6 address appears on the target interface (<code>enp0s8</code>). Other interfaces retain their IPv6 addresses. The setting persists across reboots when saved to <code>/etc/sysctl.d/</code>.</p>
+</div>
+<!-- Lab 14 -->
+<div class="lab-separator"></div>
+<h2 id="lab-14">Lab 14: Testing IPv6 Connectivity with ping6 and traceroute6</h2>
+<p><strong>Objective:</strong> Verify IPv6 reachability and trace the network path using IPv6-specific diagnostic tools.</p>
+<p><strong>Environment:</strong> Two VMs with IPv6 configured and reachable to each other.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Ping a global IPv6 address:
+        <pre>ping -6 -c 5 2001:db8::1</pre>
+</li>
+<li>Ping a link-local address (requires specifying the interface with <code>%</code> scope ID):
+        <pre>ping -6 -c 5 fe80::1%enp0s8</pre>
+</li>
+<li>Trace the IPv6 route to a destination:
+        <pre>traceroute6 2001:db8::1</pre>
+        If <code>traceroute6</code> is not available, use:
+        <pre>tracepath6 2001:db8::1</pre>
+</li>
+<li>Install required packages if missing:
+        <pre>sudo dnf install traceroute    # RHEL/CentOS
+sudo apt install traceroute    # Ubuntu</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>Successful ping replies over IPv6 are received. The traceroute output shows each hop along the IPv6 path. Link-local pings work when the correct scope ID (<code>%interface</code>) is specified.</p>
+</div>
+<!-- Lab 15 -->
+<div class="lab-separator"></div>
+<h2 id="lab-15">Lab 15: Configuring IPv6 Static Routes</h2>
+<p><strong>Objective:</strong> Add persistent IPv6 static routes using NetworkManager.</p>
+<p><strong>Environment:</strong> A Linux VM with an IPv6 gateway reachable on the local segment.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Add a persistent IPv6 static route:
+        <pre>sudo nmcli con mod enp0s8 +ipv6.routes "2001:db8:1::/48 2001:db8::1"
+sudo nmcli con up enp0s8</pre>
+</li>
+<li>Verify the route in the IPv6 routing table:
+        <pre>ip -6 route show</pre>
+        Look for: <code>2001:db8:1::/48 via 2001:db8::1 dev enp0s8</code>.
+    </li>
+<li>Test connectivity to a host in the target network:
+        <pre>ping -6 -c 3 2001:db8:1::100</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>The IPv6 routing table shows the static route to <code>2001:db8:1::/48</code> via the specified gateway. Traffic destined for that prefix uses the defined route. The route persists across reboots.</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 3: HOSTNAME RESOLUTION (Labs 16–22) -->
+<!-- ============================================================ -->
+<h1 id="section-3">Section 3: Hostname Resolution (Labs 16–22)</h1>
+<p class="section-overview">Covers hostname setting, /etc/hosts, DNS client configuration, NSS order, and basic DNS server testing.</p>
+<!-- Lab 16 -->
+<h2 id="lab-16">Lab 16: Setting and Verifying the System Hostname</h2>
+<p><strong>Objective:</strong> Set a persistent, fully qualified hostname using <code>hostnamectl</code>.</p>
+<p><strong>Environment:</strong> Any Linux VM.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Set the system hostname:
+        <pre>sudo hostnamectl set-hostname lab-server01.example.com</pre>
+</li>
+<li>Verify with multiple commands:
+        <pre>hostnamectl status
+hostname
+hostname -f</pre>
+</li>
+<li>Check the hostname file directly:
+        <pre>cat /etc/hostname</pre>
+</li>
+<li>Open a new terminal session to see the updated prompt reflecting the new hostname.</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>All commands return <code>lab-server01.example.com</code>. The file <code>/etc/hostname</code> contains the new hostname. The terminal prompt updates in new sessions.</p>
+</div>
+<!-- Lab 17 -->
+<div class="lab-separator"></div>
+<h2 id="lab-17">Lab 17: Configuring Local Name Resolution with /etc/hosts</h2>
+<p><strong>Objective:</strong> Map hostnames to IP addresses locally without relying on DNS.</p>
+<p><strong>Environment:</strong> Any Linux VM. Optionally, a second VM to verify bidirectional name resolution.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Edit the hosts file:
+        <pre>sudo nano /etc/hosts</pre>
+        Add the following entries:
+        <pre>192.168.1.20    webserver.lab.local    webserver
+192.168.1.21    dbserver.lab.local     dbserver</pre>
+</li>
+<li>Test name resolution using ping:
+        <pre>ping -c 3 webserver</pre>
+</li>
+<li>Test using <code>getent</code> to query the hosts database:
+        <pre>getent hosts webserver.lab.local
+getent hosts dbserver</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>Hostnames resolve to the correct IP addresses without any DNS server. <code>ping webserver</code> resolves to <code>192.168.1.20</code>, and <code>getent</code> returns the correct IP-to-name mapping.</p>
+</div>
+<!-- Lab 18 -->
+<div class="lab-separator"></div>
+<h2 id="lab-18">Lab 18: Configuring DNS Client Settings with /etc/resolv.conf</h2>
+<p><strong>Objective:</strong> Manually configure DNS servers and search domains for the system.</p>
+<p><strong>Environment:</strong> Any Linux VM with NetworkManager active.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Understand that NetworkManager manages <code>/etc/resolv.conf</code>. Direct edits are overwritten. Use nmcli instead:
+        <pre>sudo nmcli con mod enp0s8 ipv4.dns "8.8.8.8 8.8.4.4"
+sudo nmcli con mod enp0s8 ipv4.dns-search "lab.local example.com"
+sudo nmcli con up enp0s8</pre>
+</li>
+<li>Verify the resulting resolv.conf:
+        <pre>cat /etc/resolv.conf</pre>
+        You should see <code>nameserver 8.8.8.8</code>, <code>nameserver 8.8.4.4</code>, and <code>search lab.local example.com</code>.
+    </li>
+<li>Test DNS resolution:
+        <pre>nslookup google.com
+dig google.com</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p><code>/etc/resolv.conf</code> shows the configured nameservers and search domains. DNS queries via <code>nslookup</code> and <code>dig</code> return valid results from the configured DNS servers.</p>
+</div>
+<!-- Lab 19 -->
+<div class="lab-separator"></div>
+<h2 id="lab-19">Lab 19: Understanding and Configuring NSS with /etc/nsswitch.conf</h2>
+<p><strong>Objective:</strong> Control the order in which hostname resolution sources are consulted.</p>
+<p><strong>Environment:</strong> Any Linux VM with entries in both <code>/etc/hosts</code> and DNS for the same hostname (to see the effect of ordering).</p>
+<h4>Procedure</h4>
+<ol>
+<li>View the current NSS configuration:
+        <pre>cat /etc/nsswitch.conf | grep hosts</pre>
+        The default line is typically: <code>hosts: files dns myhostname</code>.
+    </li>
+<li>Add a test entry in <code>/etc/hosts</code> that maps <code>google.com</code> to <code>127.0.0.1</code> (for demonstration purposes only):
+        <pre>echo "127.0.0.1 google.com" | sudo tee -a /etc/hosts</pre>
+</li>
+<li>Test resolution — with <code>files</code> first, the hosts file entry takes priority:
+        <pre>getent hosts google.com</pre>
+</li>
+<li>Edit <code>/etc/nsswitch.conf</code> and change the hosts line to <code>dns files myhostname</code>:
+        <pre>sudo nano /etc/nsswitch.conf</pre>
+</li>
+<li>Test again:
+        <pre>getent hosts google.com</pre>
+        Now DNS is queried first, returning the real IP address.
+    </li>
+<li>Reset the hosts line to its default: <code>files dns myhostname</code>, and remove the test entry from <code>/etc/hosts</code>.</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>When <code>files</code> is listed first, <code>/etc/hosts</code> entries take priority over DNS. When <code>dns</code> is first, DNS responses override local entries. You understand the lookup sequence defined by NSS.</p>
+</div>
+<!-- Lab 20 -->
+<div class="lab-separator"></div>
+<h2 id="lab-20">Lab 20: Using dig, nslookup, and host for DNS Troubleshooting</h2>
+<p><strong>Objective:</strong> Query specific DNS record types using standard command-line tools.</p>
+<p><strong>Environment:</strong> Any Linux VM with internet access and DNS tools installed.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Query A records (IPv4 address):
+        <pre>dig example.com A</pre>
+</li>
+<li>Query MX records (mail servers):
+        <pre>dig example.com MX</pre>
+</li>
+<li>Query NS records (name servers):
+        <pre>dig example.com NS</pre>
+</li>
+<li>Perform a reverse DNS lookup:
+        <pre>dig -x 8.8.8.8</pre>
+</li>
+<li>Use <code>nslookup</code> for a simpler query:
+        <pre>nslookup example.com</pre>
+</li>
+<li>Use <code>host</code> for a concise result:
+        <pre>host example.com</pre>
+</li>
+<li>Compare the output formats. <code>dig</code> provides the most detail (query time, flags, authority section), while <code>host</code> is the most concise.</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>You retrieve A, MX, NS, and PTR records successfully. You understand the query/response structure of DNS and can interpret the ANSWER, AUTHORITY, and ADDITIONAL sections in <code>dig</code> output.</p>
+</div>
+<!-- Lab 21 -->
+<div class="lab-separator"></div>
+<h2 id="lab-21">Lab 21: Configuring systemd-resolved for DNS</h2>
+<p><strong>Objective:</strong> Use <code>systemd-resolved</code> as the local DNS resolver daemon.</p>
+<p><strong>Environment:</strong> Ubuntu 22.04/24.04 VM (systemd-resolved is the default resolver on Ubuntu).</p>
+<h4>Procedure</h4>
+<ol>
+<li>Check the current status of systemd-resolved:
+        <pre>resolvectl status</pre>
+</li>
+<li>Edit the resolved configuration:
+        <pre>sudo nano /etc/systemd/resolved.conf</pre>
+        Set the following under <code>[Resolve]</code>:
+        <pre>[Resolve]
+DNS=8.8.8.8 1.1.1.1
+FallbackDNS=8.8.4.4 1.0.0.1
+Domains=~.</pre>
+</li>
+<li>Restart the service:
+        <pre>sudo systemctl restart systemd-resolved</pre>
+</li>
+<li>Verify the configuration:
+        <pre>resolvectl status
+resolvectl query example.com</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p><code>resolvectl status</code> shows the configured DNS servers. Queries via <code>resolvectl query</code> return valid results, confirming that <code>systemd-resolved</code> is handling DNS resolution with the specified servers.</p>
+</div>
+<!-- Lab 22 -->
+<div class="lab-separator"></div>
+<h2 id="lab-22">Lab 22: Implementing Split DNS with Multiple Network Connections</h2>
+<p><strong>Objective:</strong> Route DNS queries for different domains to different DNS servers based on the search domain.</p>
+<p><strong>Environment:</strong> A Linux VM with two network connections (e.g., one for a "corporate" internal network and one for general internet access).</p>
+<h4>Procedure</h4>
+<ol>
+<li>Configure the first connection for internal DNS:
+        <pre>sudo nmcli con mod "Internal" ipv4.dns "10.0.0.53"
+sudo nmcli con mod "Internal" ipv4.dns-search "corp.local"
+sudo nmcli con up "Internal"</pre>
+</li>
+<li>Configure the second connection for public DNS:
+        <pre>sudo nmcli con mod "External" ipv4.dns "8.8.8.8"
+sudo nmcli con mod "External" ipv4.dns-search "~."
+sudo nmcli con up "External"</pre>
+</li>
+<li>Verify per-link DNS configuration:
+        <pre>resolvectl status</pre>
+</li>
+<li>Test internal name resolution:
+        <pre>resolvectl query intranet.corp.local</pre>
+</li>
+<li>Test external name resolution:
+        <pre>resolvectl query google.com</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>Queries for <code>corp.local</code> domains are routed to the internal DNS server (<code>10.0.0.53</code>). All other DNS queries go to the public DNS server (<code>8.8.8.8</code>). <code>resolvectl status</code> shows different DNS servers assigned to different links.</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 4: NTP TIME SYNCHRONIZATION (Labs 23–28) -->
+<!-- ============================================================ -->
+<h1 id="section-4">Section 4: NTP Time Synchronization (Labs 23–28)</h1>
+<p class="section-overview">Covers chronyd and systemd-timesyncd configuration, timezone management, and NTP server verification.</p>
+<!-- Lab 23 -->
+<h2 id="lab-23">Lab 23: Checking Current Time and Timezone Settings</h2>
+<p><strong>Objective:</strong> View system time, hardware clock, timezone, and NTP synchronization status.</p>
+<p><strong>Environment:</strong> Any Linux VM.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Display comprehensive time information:
+        <pre>timedatectl</pre>
+        Review the fields: Local time, Universal time, RTC time, Time zone, NTP synchronized.
+    </li>
+<li>Show the current date and time:
+        <pre>date</pre>
+</li>
+<li>Show the hardware (RTC) clock:
+        <pre>sudo hwclock --show</pre>
+</li>
+<li>Note whether "NTP synchronized: yes" appears in the <code>timedatectl</code> output. This indicates whether the system clock is being synchronized with an NTP server.</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>You see the current local time, UTC time, timezone (e.g., <code>America/New_York</code>), and NTP synchronization status. You understand the difference between system time and hardware clock time.</p>
+</div>
+<!-- Lab 24 -->
+<div class="lab-separator"></div>
+<h2 id="lab-24">Lab 24: Setting the System Timezone</h2>
+<p><strong>Objective:</strong> Change the system timezone persistently.</p>
+<p><strong>Environment:</strong> Any Linux VM.</p>
+<h4>Procedure</h4>
+<ol>
+<li>List available timezones (filter for a region):
+        <pre>timedatectl list-timezones | grep America</pre>
+</li>
+<li>Set the timezone:
+        <pre>sudo timedatectl set-timezone America/New_York</pre>
+</li>
+<li>Verify the change:
+        <pre>timedatectl</pre>
+</li>
+<li>Check the symlink that stores the timezone:
+        <pre>ls -la /etc/localtime</pre>
+        It should point to a file in <code>/usr/share/zoneinfo/</code>.
+    </li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>The timezone changes to <code>America/New_York</code> (or your chosen timezone). The <code>/etc/localtime</code> symlink updates accordingly. The <code>date</code> command now shows time in the new timezone.</p>
+</div>
+<!-- Lab 25 -->
+<div class="lab-separator"></div>
+<h2 id="lab-25">Lab 25: Configuring Time Synchronization with chronyd</h2>
+<p><strong>Objective:</strong> Configure and verify chronyd as the NTP client on RHEL/CentOS systems.</p>
+<p><strong>Environment:</strong> CentOS/RHEL 9 VM (chrony is the default NTP implementation).</p>
+<h4>Procedure</h4>
+<ol>
+<li>Install chrony if not already present:
+        <pre>sudo dnf install chrony</pre>
+</li>
+<li>Edit the chrony configuration to add or confirm an NTP server:
+        <pre>sudo nano /etc/chrony.conf</pre>
+        Ensure the following line is present:
+        <pre>server pool.ntp.org iburst</pre>
+</li>
+<li>Restart chronyd:
+        <pre>sudo systemctl restart chronyd
+sudo systemctl enable chronyd</pre>
+</li>
+<li>Check synchronization status:
+        <pre>chronyc tracking
+chronyc sources -v
+chronyc sourcestats</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>The <code>chronyc tracking</code> output shows a low system clock offset and the reference NTP server. <code>chronyc sources</code> lists the configured NTP servers with their polling status and reach values.</p>
+</div>
+<!-- Lab 26 -->
+<div class="lab-separator"></div>
+<h2 id="lab-26">Lab 26: Configuring Time Synchronization with systemd-timesyncd</h2>
+<p><strong>Objective:</strong> Use systemd-timesyncd as a lightweight NTP client on Ubuntu systems.</p>
+<p><strong>Environment:</strong> Ubuntu 22.04/24.04 VM.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Edit the timesyncd configuration:
+        <pre>sudo nano /etc/systemd/timesyncd.conf</pre>
+        Add or modify under <code>[Time]</code>:
+        <pre>[Time]
+NTP=pool.ntp.org
+FallbackNTP=ntp.ubuntu.com</pre>
+</li>
+<li>Restart the service:
+        <pre>sudo systemctl restart systemd-timesyncd</pre>
+</li>
+<li>Check synchronization status:
+        <pre>timedatectl timesync-status
+timedatectl</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p><code>timedatectl timesync-status</code> shows the connected NTP server, polling interval, and offset. <code>timedatectl</code> confirms "NTP synchronized: yes".</p>
+</div>
+<!-- Lab 27 -->
+<div class="lab-separator"></div>
+<h2 id="lab-27">Lab 27: Setting Up a Local NTP Server with chronyd</h2>
+<p><strong>Objective:</strong> Configure a VM as an NTP server that other lab VMs can synchronize against.</p>
+<p><strong>Environment:</strong> A CentOS/RHEL 9 VM to act as the NTP server, and one or more client VMs.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Edit <code>/etc/chrony.conf</code> on the server VM to allow clients:
+        <pre>sudo nano /etc/chrony.conf</pre>
+        Add the following lines:
+        <pre>allow 192.168.1.0/24
+local stratum 10</pre>
+</li>
+<li>Restart chronyd:
+        <pre>sudo systemctl restart chronyd</pre>
+</li>
+<li>Open the NTP port on the firewall:
+        <pre>sudo firewall-cmd --add-service=ntp --permanent
+sudo firewall-cmd --reload</pre>
+</li>
+<li>On client VMs, point to this NTP server. Edit <code>/etc/chrony.conf</code>:
+        <pre>server 192.168.1.10 iburst</pre>
+        Restart chronyd and verify:
+        <pre>sudo systemctl restart chronyd
+chronyc sources</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>Client VMs synchronize time from the local NTP server. <code>chronyc sources</code> on the client shows the local server IP as the active NTP source.</p>
+</div>
+<!-- Lab 28 -->
+<div class="lab-separator"></div>
+<h2 id="lab-28">Lab 28: Manually Setting Time and Disabling NTP</h2>
+<p><strong>Objective:</strong> Manually set the system time and understand how NTP overrides manual settings.</p>
+<p><strong>Environment:</strong> Any Linux VM.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Disable NTP synchronization:
+        <pre>sudo timedatectl set-ntp false</pre>
+</li>
+<li>Set the time manually:
+        <pre>sudo timedatectl set-time "2025-01-15 10:30:00"</pre>
+</li>
+<li>Verify the manual time:
+        <pre>date
+timedatectl</pre>
+</li>
+<li>Re-enable NTP synchronization:
+        <pre>sudo timedatectl set-ntp true</pre>
+</li>
+<li>Observe the time correction:
+        <pre>date
+timedatectl</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>When NTP is disabled, the time changes to the manually set value. When NTP is re-enabled, the system clock is automatically corrected to the accurate time from the NTP server within seconds.</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 5: NETWORK MONITORING AND TROUBLESHOOTING (Labs 29–40) -->
+<!-- ============================================================ -->
+<h1 id="section-5">Section 5: Network Monitoring and Troubleshooting (Labs 29–40)</h1>
+<p class="section-overview">Covers essential network diagnostic tools including ping, traceroute, ss, netstat, tcpdump, nmap, iperf3, mtr, and network performance analysis.</p>
+<!-- Lab 29 -->
+<h2 id="lab-29">Lab 29: Basic Connectivity Testing with ping</h2>
+<p><strong>Objective:</strong> Test network reachability, measure round-trip time, and perform basic MTU discovery.</p>
+<p><strong>Environment:</strong> Any Linux VM with network connectivity to a gateway and the internet.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Ping a local gateway (5 packets):
+        <pre>ping -c 5 192.168.1.1</pre>
+</li>
+<li>Ping an internet host by name:
+        <pre>ping -c 5 google.com</pre>
+</li>
+<li>Test the Maximum Transmission Unit (MTU) with a large packet and "do not fragment" flag:
+        <pre>ping -s 1472 -M do -c 3 192.168.1.1</pre>
+        If the packet is too large for the path MTU, you receive a "message too long" error.
+    </li>
+<li>Send pings at a faster interval:
+        <pre>ping -i 0.2 -c 20 192.168.1.1</pre>
+</li>
+<li>Analyze the summary output: min/avg/max/mdev RTT and packet loss percentage.</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>You interpret round-trip time (RTT), TTL values, and packet loss percentages. You understand that MTU discovery helps identify the maximum packet size that can traverse the path without fragmentation.</p>
+</div>
+<!-- Lab 30 -->
+<div class="lab-separator"></div>
+<h2 id="lab-30">Lab 30: Tracing Network Paths with traceroute and tracepath</h2>
+<p><strong>Objective:</strong> Trace the route that packets take to a destination and identify each hop along the path.</p>
+<p><strong>Environment:</strong> Any Linux VM with internet access. Install <code>traceroute</code> if not present.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Trace using UDP probes (default):
+        <pre>traceroute 8.8.8.8</pre>
+</li>
+<li>Trace using ICMP echo probes:
+        <pre>sudo traceroute -I 8.8.8.8</pre>
+</li>
+<li>Trace using TCP SYN probes on port 443:
+        <pre>sudo traceroute -T -p 443 8.8.8.8</pre>
+</li>
+<li>Use <code>tracepath</code> as an unprivileged alternative:
+        <pre>tracepath 8.8.8.8</pre>
+</li>
+<li>Interpret the hop-by-hop output: each line shows the hop number, router IP/hostname, and three RTT measurements. An asterisk (<code>*</code>) indicates a timed-out probe.</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>You see each router hop between your VM and the destination, with latency measurements per hop. You can identify potential network bottlenecks where latency increases sharply or packet loss occurs.</p>
+</div>
+<!-- Lab 31 -->
+<div class="lab-separator"></div>
+<h2 id="lab-31">Lab 31: Inspecting Active Connections with ss</h2>
+<p><strong>Objective:</strong> View listening ports, established connections, and socket statistics using the <code>ss</code> utility.</p>
+<p><strong>Environment:</strong> Any Linux VM with some running network services (e.g., sshd).</p>
+<h4>Procedure</h4>
+<ol>
+<li>List all TCP and UDP listening sockets with port numbers:
+        <pre>ss -tuln</pre>
+</li>
+<li>List all connections with process names and PIDs:
+        <pre>sudo ss -tunap</pre>
+</li>
+<li>Show socket summary statistics:
+        <pre>ss -s</pre>
+</li>
+<li>Filter for established SSH connections:
+        <pre>ss state established '( dport = :ssh )'</pre>
+</li>
+<li>Compare with the legacy <code>netstat</code> command:
+        <pre>sudo netstat -tuln</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>You list all listening services and their bound addresses/ports. You identify which processes own which sockets. You understand that <code>ss</code> is the modern replacement for <code>netstat</code> with faster performance.</p>
+</div>
+<!-- Lab 32 -->
+<div class="lab-separator"></div>
+<h2 id="lab-32">Lab 32: Capturing Network Traffic with tcpdump</h2>
+<p><strong>Objective:</strong> Capture and analyze network packets on a specific interface using <code>tcpdump</code>.</p>
+<p><strong>Environment:</strong> Any Linux VM. Install <code>tcpdump</code> if not present.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Capture 50 packets on an interface:
+        <pre>sudo tcpdump -i enp0s8 -c 50</pre>
+</li>
+<li>Capture only HTTP traffic (port 80):
+        <pre>sudo tcpdump -i enp0s8 port 80</pre>
+</li>
+<li>Capture traffic to/from a specific host:
+        <pre>sudo tcpdump -i enp0s8 host 192.168.1.100</pre>
+</li>
+<li>Save captured packets to a pcap file for later analysis:
+        <pre>sudo tcpdump -i enp0s8 -c 100 -w /tmp/capture.pcap</pre>
+</li>
+<li>Read and display a saved pcap file:
+        <pre>sudo tcpdump -r /tmp/capture.pcap -nn</pre>
+        The <code>-nn</code> flag prevents DNS and port name resolution for faster display.
+    </li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>You capture packets in real time, save them to pcap files, and filter traffic by port, host, or protocol using BPF filter syntax. You can read back saved captures for analysis.</p>
+</div>
+<!-- Lab 33 -->
+<div class="lab-separator"></div>
+<h2 id="lab-33">Lab 33: Network Scanning with nmap</h2>
+<p><strong>Objective:</strong> Discover active hosts and open services on a network segment using <code>nmap</code>.</p>
+<p><strong>Environment:</strong> Any Linux VM. Install <code>nmap</code>. Use only on your own lab network.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Install nmap:
+        <pre>sudo dnf install nmap    # RHEL/CentOS
+sudo apt install nmap    # Ubuntu</pre>
+</li>
+<li>Perform a ping sweep to discover active hosts:
+        <pre>nmap -sn 192.168.1.0/24</pre>
+</li>
+<li>Perform a TCP connect scan on a specific host:
+        <pre>nmap -sT 192.168.1.100</pre>
+</li>
+<li>Detect service versions on specific ports:
+        <pre>nmap -sV -p 22,80,443 192.168.1.100</pre>
+</li>
+<li>Attempt OS detection:
+        <pre>sudo nmap -O 192.168.1.100</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>You discover active hosts on the subnet, identify open ports and running services with version information, and detect the operating system of target hosts.</p>
+</div>
+<!-- Lab 34 -->
+<div class="lab-separator"></div>
+<h2 id="lab-34">Lab 34: Monitoring Network Interfaces with ip and ethtool</h2>
+<p><strong>Objective:</strong> Check interface statistics, link speed, duplex mode, and error counters.</p>
+<p><strong>Environment:</strong> Any Linux VM. Install <code>ethtool</code> if not present.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Display interface statistics (packets sent/received, errors, drops):
+        <pre>ip -s link show enp0s8</pre>
+</li>
+<li>Check link speed and duplex with ethtool:
+        <pre>sudo ethtool enp0s8</pre>
+</li>
+<li>Read raw counters from sysfs:
+        <pre>cat /sys/class/net/enp0s8/statistics/rx_bytes
+cat /sys/class/net/enp0s8/statistics/tx_bytes
+cat /sys/class/net/enp0s8/statistics/rx_errors</pre>
+</li>
+<li>Monitor counters over time by running the statistics command twice with a delay:
+        <pre>ip -s link show enp0s8; sleep 10; ip -s link show enp0s8</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>You read packet counts, byte counters, error/drop statistics, link speed (e.g., 1000Mb/s), and duplex mode (Full/Half). You can detect interface problems by observing increasing error counters.</p>
+</div>
+<!-- Lab 35 -->
+<div class="lab-separator"></div>
+<h2 id="lab-35">Lab 35: Bandwidth Testing with iperf3</h2>
+<p><strong>Objective:</strong> Measure network throughput and jitter between two VMs using <code>iperf3</code>.</p>
+<p><strong>Environment:</strong> Two Linux VMs on the same network. Install <code>iperf3</code> on both.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Install iperf3 on both VMs:
+        <pre>sudo dnf install iperf3    # RHEL/CentOS
+sudo apt install iperf3    # Ubuntu</pre>
+</li>
+<li>Start the iperf3 server on VM1:
+        <pre>iperf3 -s</pre>
+</li>
+<li>Run a TCP bandwidth test from VM2:
+        <pre>iperf3 -c 192.168.1.100</pre>
+</li>
+<li>Run a UDP bandwidth test (100 Mbps target):
+        <pre>iperf3 -c 192.168.1.100 -u -b 100M</pre>
+</li>
+<li>Run a reverse test (server sends to client):
+        <pre>iperf3 -c 192.168.1.100 -R</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>You measure TCP throughput (bandwidth), UDP jitter, and packet loss between the two VMs. The reverse test confirms bidirectional bandwidth. Typical VM-to-VM throughput on a host-only network should approach the link speed.</p>
+</div>
+<!-- Lab 36 -->
+<div class="lab-separator"></div>
+<h2 id="lab-36">Lab 36: Continuous Network Diagnostics with mtr</h2>
+<p><strong>Objective:</strong> Combine ping and traceroute into a single continuous diagnostic tool.</p>
+<p><strong>Environment:</strong> Any Linux VM with internet access. Install <code>mtr</code>.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Run mtr in interactive mode:
+        <pre>mtr google.com</pre>
+        Press <code>q</code> to quit.
+    </li>
+<li>Generate a report (non-interactive) with 100 packets:
+        <pre>mtr --report -c 100 google.com</pre>
+</li>
+<li>Use TCP mode on port 443:
+        <pre>sudo mtr -T -P 443 google.com</pre>
+</li>
+<li>Interpret the columns: <code>Loss%</code>, <code>Snt</code> (sent), <code>Last</code>, <code>Avg</code>, <code>Best</code>, <code>Wrst</code> (worst) latency per hop.</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>You identify packet loss and latency at specific hops along the path. The report mode provides a clean summary suitable for including in trouble tickets or documentation.</p>
+</div>
+<!-- Lab 37 -->
+<div class="lab-separator"></div>
+<h2 id="lab-37">Lab 37: Monitoring DNS Resolution Performance</h2>
+<p><strong>Objective:</strong> Measure and compare DNS query times across different DNS servers.</p>
+<p><strong>Environment:</strong> Any Linux VM with internet access.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Measure DNS query time with dig:
+        <pre>dig google.com | grep "Query time"</pre>
+</li>
+<li>Time a full DNS lookup with nslookup:
+        <pre>time nslookup google.com</pre>
+</li>
+<li>Compare query times between different DNS servers:
+        <pre>dig @8.8.8.8 example.com | grep "Query time"
+dig @1.1.1.1 example.com | grep "Query time"</pre>
+</li>
+<li>View resolver statistics (if using systemd-resolved):
+        <pre>resolvectl statistics</pre>
+</li>
+<li>Flush the DNS cache and re-query:
+        <pre>sudo resolvectl flush-caches
+dig example.com | grep "Query time"</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>You compare DNS resolution times across different servers. Cached queries return much faster than uncached ones. You can identify slow DNS resolvers that might impact application performance.</p>
+</div>
+<!-- Lab 38 -->
+<div class="lab-separator"></div>
+<h2 id="lab-38">Lab 38: Analyzing Network Connections with netstat</h2>
+<p><strong>Objective:</strong> Use the legacy <code>netstat</code> tool for network analysis, as it is still within the LFCS exam scope.</p>
+<p><strong>Environment:</strong> Any Linux VM. Install the <code>net-tools</code> package.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Install net-tools:
+        <pre>sudo dnf install net-tools    # RHEL/CentOS
+sudo apt install net-tools    # Ubuntu</pre>
+</li>
+<li>List TCP/UDP listening sockets:
+        <pre>sudo netstat -tuln</pre>
+</li>
+<li>Show all connections with process information:
+        <pre>sudo netstat -anp</pre>
+</li>
+<li>Display the routing table:
+        <pre>netstat -r</pre>
+</li>
+<li>Display interface statistics:
+        <pre>netstat -i</pre>
+</li>
+<li>Display multicast group memberships:
+        <pre>netstat -g</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>You use <code>netstat</code> to display the same types of information as <code>ss</code>, but in the older format. You can cross-reference output with <code>ss</code> to build fluency with both tools.</p>
+</div>
+<!-- Lab 39 -->
+<div class="lab-separator"></div>
+<h2 id="lab-39">Lab 39: Monitoring Real-Time Network Traffic with nload and iftop</h2>
+<p><strong>Objective:</strong> Visualize bandwidth usage in real time at both the interface and per-connection levels.</p>
+<p><strong>Environment:</strong> Any Linux VM. Install <code>nload</code> and <code>iftop</code>.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Install the tools:
+        <pre>sudo dnf install epel-release &amp;&amp; sudo dnf install nload iftop    # RHEL/CentOS
+sudo apt install nload iftop    # Ubuntu</pre>
+</li>
+<li>Run nload to view interface bandwidth graphs:
+        <pre>nload enp0s8</pre>
+        Press <code>q</code> to quit.
+    </li>
+<li>Run iftop to view per-connection bandwidth:
+        <pre>sudo iftop -i enp0s8</pre>
+        Press <code>q</code> to quit.
+    </li>
+<li>Generate test traffic in a separate terminal to observe the tools in action. On one VM:
+        <pre>dd if=/dev/zero bs=1M count=500 | nc -l 9999</pre>
+        On another VM:
+        <pre>nc 192.168.1.100 9999 &gt; /dev/null</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>You see real-time incoming/outgoing bandwidth graphs in <code>nload</code>. <code>iftop</code> shows a per-connection breakdown of bandwidth usage. The test traffic generates visible spikes in both tools.</p>
+</div>
+<!-- Lab 40 -->
+<div class="lab-separator"></div>
+<h2 id="lab-40">Lab 40: Troubleshooting a Complete Network Connectivity Issue</h2>
+<p><strong>Objective:</strong> Systematically diagnose and fix a network problem using a structured layered troubleshooting approach.</p>
+<p><strong>Environment:</strong> A Linux VM where you will deliberately introduce a misconfiguration (wrong default gateway) and then diagnose and fix it.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Introduce the problem — set a wrong default gateway:
+        <pre>sudo ip route del default
+sudo ip route add default via 192.168.1.254</pre>
+</li>
+<li><strong>Layer 1/2 (Link):</strong> Verify the interface is up:
+        <pre>ip link show enp0s8</pre>
+</li>
+<li><strong>Layer 3 (Network):</strong> Check IP address and routes:
+        <pre>ip addr show enp0s8
+ip route show</pre>
+</li>
+<li><strong>Layer 3 (Reachability):</strong> Test local vs. remote connectivity:
+        <pre>ping -c 2 192.168.1.1
+ping -c 2 8.8.8.8</pre>
+        The local ping should work; the remote ping should fail (wrong gateway).
+    </li>
+<li><strong>DNS:</strong> Check DNS configuration:
+        <pre>cat /etc/resolv.conf
+dig google.com</pre>
+</li>
+<li><strong>Firewall:</strong> Check if firewall rules are blocking traffic:
+        <pre>sudo iptables -L -n
+sudo firewall-cmd --list-all</pre>
+</li>
+<li><strong>Fix the issue:</strong> Correct the default gateway:
+        <pre>sudo ip route del default
+sudo ip route add default via 192.168.1.1</pre>
+</li>
+<li>Verify the fix:
+        <pre>ping -c 3 8.8.8.8
+curl -s -o /dev/null -w "%{http_code}" http://example.com</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>You follow a structured troubleshooting methodology (link → IP → routing → DNS → firewall → application). You identify the wrong gateway as the root cause and correct it. Internet connectivity is restored after the fix.</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 6: OPENSSH SERVER AND CLIENT CONFIGURATION (Labs 41–52) -->
+<!-- ============================================================ -->
+<h1 id="section-6">Section 6: OpenSSH Server and Client Configuration (Labs 41–52)</h1>
+<p class="section-overview">Covers SSH server hardening, key-based authentication, tunneling, SCP, SFTP, and advanced SSH configurations.</p>
+<!-- Lab 41 -->
+<h2 id="lab-41">Lab 41: Installing and Starting the OpenSSH Server</h2>
+<p><strong>Objective:</strong> Install, enable, and start the OpenSSH server daemon.</p>
+<p><strong>Environment:</strong> Any Linux VM.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Install the OpenSSH server:
+        <pre>sudo dnf install openssh-server    # RHEL/CentOS
+sudo apt install openssh-server    # Ubuntu</pre>
+</li>
+<li>Enable and start sshd:
+        <pre>sudo systemctl enable --now sshd</pre>
+</li>
+<li>Verify the service is running:
+        <pre>systemctl status sshd</pre>
+</li>
+<li>Confirm sshd is listening on port 22:
+        <pre>ss -tuln | grep 22</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>The <code>sshd</code> service is active (running) and listening on port 22 (TCP). The service is enabled to start automatically at boot.</p>
+</div>
+<!-- Lab 42 -->
+<div class="lab-separator"></div>
+<h2 id="lab-42">Lab 42: Connecting with the SSH Client</h2>
+<p><strong>Objective:</strong> Connect to a remote server using the SSH client and execute remote commands.</p>
+<p><strong>Environment:</strong> Two Linux VMs — one running sshd, one as the client.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Connect to the remote server:
+        <pre>ssh user@192.168.1.100</pre>
+        Accept the host key fingerprint when prompted for the first time.
+    </li>
+<li>Connect with verbose output to see the negotiation process:
+        <pre>ssh -v user@192.168.1.100</pre>
+</li>
+<li>Connect on a custom port:
+        <pre>ssh -p 2222 user@192.168.1.100</pre>
+</li>
+<li>Run a single command on the remote host without opening an interactive session:
+        <pre>ssh user@192.168.1.100 'uname -a'</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>Successful SSH login to the remote server. Verbose output shows key exchange, authentication, and channel setup. Remote command execution returns the output of <code>uname -a</code> from the remote system.</p>
+</div>
+<!-- Lab 43 -->
+<div class="lab-separator"></div>
+<h2 id="lab-43">Lab 43: Generating SSH Key Pairs</h2>
+<p><strong>Objective:</strong> Create Ed25519 and RSA SSH key pairs for secure authentication.</p>
+<p><strong>Environment:</strong> Any Linux VM (client side).</p>
+<h4>Procedure</h4>
+<ol>
+<li>Generate an Ed25519 key pair (recommended):
+        <pre>ssh-keygen -t ed25519 -C "lab@example.com"</pre>
+        Press Enter to accept the default file location. Optionally enter a passphrase.
+    </li>
+<li>Generate an RSA 4096-bit key pair:
+        <pre>ssh-keygen -t rsa -b 4096</pre>
+</li>
+<li>Examine the generated files:
+        <pre>ls -la ~/.ssh/
+cat ~/.ssh/id_ed25519.pub</pre>
+</li>
+<li>Understand the files: <code>id_ed25519</code> is the private key (never share), <code>id_ed25519.pub</code> is the public key (safe to distribute).</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>Key pair files are created in <code>~/.ssh/</code>. The public key content is a single line starting with <code>ssh-ed25519</code> or <code>ssh-rsa</code>. The private key file has permissions <code>600</code>.</p>
+</div>
+<!-- Lab 44 -->
+<div class="lab-separator"></div>
+<h2 id="lab-44">Lab 44: Configuring Key-Based Authentication</h2>
+<p><strong>Objective:</strong> Set up passwordless SSH login using public key authentication.</p>
+<p><strong>Environment:</strong> Client VM with a generated key pair and a server VM running sshd.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Copy the public key to the server using <code>ssh-copy-id</code>:
+        <pre>ssh-copy-id user@192.168.1.100</pre>
+</li>
+<li>Test passwordless login:
+        <pre>ssh user@192.168.1.100</pre>
+        You should not be prompted for a password.
+    </li>
+<li>Alternatively, copy the key manually:
+        <pre>cat ~/.ssh/id_ed25519.pub | ssh user@192.168.1.100 'mkdir -p ~/.ssh &amp;&amp; cat &gt;&gt; ~/.ssh/authorized_keys'</pre>
+</li>
+<li>Verify correct permissions on the server:
+        <pre>ssh user@192.168.1.100 'ls -la ~/.ssh/; stat -c "%a %n" ~/.ssh ~/.ssh/authorized_keys'</pre>
+        Required: <code>~/.ssh</code> = 700, <code>authorized_keys</code> = 600.
+    </li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>SSH login succeeds without a password prompt when using key-based authentication. The <code>authorized_keys</code> file on the server contains the client's public key.</p>
+</div>
+<!-- Lab 45 -->
+<div class="lab-separator"></div>
+<h2 id="lab-45">Lab 45: Hardening the SSH Server Configuration</h2>
+<p><strong>Objective:</strong> Secure the SSH server by modifying <code>/etc/ssh/sshd_config</code> to restrict access.</p>
+<p><strong>Environment:</strong> A server VM with sshd running and key-based authentication already configured (Lab 44).</p>
+<h4>Procedure</h4>
+<ol>
+<li>Edit the SSH server configuration:
+        <pre>sudo nano /etc/ssh/sshd_config</pre>
+        Set the following directives:
+        <pre>PermitRootLogin no
+PasswordAuthentication no
+MaxAuthTries 3
+ClientAliveInterval 300
+ClientAliveCountMax 2
+X11Forwarding no
+AllowUsers labuser</pre>
+</li>
+<li>Validate the configuration syntax:
+        <pre>sudo sshd -t</pre>
+</li>
+<li>Restart sshd:
+        <pre>sudo systemctl restart sshd</pre>
+</li>
+<li>Test that root login is denied:
+        <pre>ssh root@192.168.1.100</pre>
+</li>
+<li>Test that password authentication is rejected (from a host without an authorized key):
+        <pre>ssh otheruser@192.168.1.100</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>Root login is denied. Password authentication is rejected. Only the user <code>labuser</code> can connect, and only via key-based authentication. Idle connections are terminated after 10 minutes (300s × 2 missed keepalives).</p>
+</div>
+<!-- Lab 46 -->
+<div class="lab-separator"></div>
+<h2 id="lab-46">Lab 46: Changing the SSH Listening Port</h2>
+<p><strong>Objective:</strong> Run sshd on a non-standard port and configure SELinux and the firewall accordingly.</p>
+<p><strong>Environment:</strong> CentOS/RHEL 9 VM with SELinux enforcing.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Edit sshd_config to change the port:
+        <pre>sudo nano /etc/ssh/sshd_config</pre>
+        Set:
+        <pre>Port 2222</pre>
+</li>
+<li>Update SELinux to allow sshd on the new port:
+        <pre>sudo semanage port -a -t ssh_port_t -p tcp 2222</pre>
+</li>
+<li>Open the new port in the firewall:
+        <pre>sudo firewall-cmd --add-port=2222/tcp --permanent
+sudo firewall-cmd --reload</pre>
+</li>
+<li>Restart sshd:
+        <pre>sudo systemctl restart sshd</pre>
+</li>
+<li>Connect using the new port:
+        <pre>ssh -p 2222 user@192.168.1.100</pre>
+</li>
+<li>Verify the default port 22 is no longer accessible:
+        <pre>ss -tuln | grep -E '22|2222'</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>SSH is accessible only on port 2222. Connections to port 22 are refused. SELinux permits sshd on the new port without AVC denials.</p>
+</div>
+<!-- Lab 47 -->
+<div class="lab-separator"></div>
+<h2 id="lab-47">Lab 47: Using SSH Config File for Connection Profiles</h2>
+<p><strong>Objective:</strong> Create convenient SSH connection aliases in the client config file.</p>
+<p><strong>Environment:</strong> Client VM with access to one or more SSH servers.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Create or edit the SSH client config file:
+        <pre>nano ~/.ssh/config</pre>
+        Add connection profiles:
+        <pre>Host webserver
+    HostName 192.168.1.100
+    User labuser
+    Port 22
+    IdentityFile ~/.ssh/id_ed25519
+
+Host dbserver
+    HostName 192.168.1.101
+    User admin
+    Port 2222
+    IdentityFile ~/.ssh/id_rsa</pre>
+</li>
+<li>Set correct permissions:
+        <pre>chmod 600 ~/.ssh/config</pre>
+</li>
+<li>Connect using the alias:
+        <pre>ssh webserver
+ssh dbserver</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>You connect to servers using short aliases (<code>ssh webserver</code>) instead of typing full connection parameters each time. Each alias uses its configured user, port, and key.</p>
+</div>
+<!-- Lab 48 -->
+<div class="lab-separator"></div>
+<h2 id="lab-48">Lab 48: Transferring Files with SCP</h2>
+<p><strong>Objective:</strong> Securely copy files between hosts using SCP.</p>
+<p><strong>Environment:</strong> Two Linux VMs with SSH connectivity between them.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Copy a local file to the remote host:
+        <pre>scp file.txt user@192.168.1.100:/tmp/</pre>
+</li>
+<li>Copy a remote file to the local system:
+        <pre>scp user@192.168.1.100:/var/log/syslog ./</pre>
+</li>
+<li>Copy an entire directory recursively:
+        <pre>scp -r /etc/configs/ user@192.168.1.100:/backup/</pre>
+</li>
+<li>Copy using a non-standard SSH port:
+        <pre>scp -P 2222 file.txt user@192.168.1.100:/tmp/</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>Files are transferred securely between VMs in both directions. SCP shows transfer progress and speed. Recursive directory copies include all subdirectories and files.</p>
+</div>
+<!-- Lab 49 -->
+<div class="lab-separator"></div>
+<h2 id="lab-49">Lab 49: Using SFTP for Interactive File Transfer</h2>
+<p><strong>Objective:</strong> Transfer files interactively using the SFTP subsystem.</p>
+<p><strong>Environment:</strong> Two Linux VMs with SSH connectivity.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Connect via SFTP:
+        <pre>sftp user@192.168.1.100</pre>
+</li>
+<li>Navigate and browse the remote filesystem:
+        <pre>ls
+cd /var/log
+ls -la</pre>
+</li>
+<li>Download a file:
+        <pre>get syslog</pre>
+</li>
+<li>Upload a file:
+        <pre>put localfile.txt</pre>
+</li>
+<li>Create a remote directory:
+        <pre>mkdir /tmp/uploads</pre>
+</li>
+<li>Exit SFTP:
+        <pre>bye</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>You navigate the remote filesystem interactively and transfer files in both directions. SFTP provides a familiar FTP-like interface over the encrypted SSH channel.</p>
+</div>
+<!-- Lab 50 -->
+<div class="lab-separator"></div>
+<h2 id="lab-50">Lab 50: Setting Up SSH Local Port Forwarding (Tunnel)</h2>
+<p><strong>Objective:</strong> Create an SSH tunnel to access a remote service through a local port.</p>
+<p><strong>Environment:</strong> A remote VM running a service on localhost:8080 (not exposed externally) and a client VM.</p>
+<h4>Procedure</h4>
+<ol>
+<li>On the remote VM, start a simple web server bound to localhost:
+        <pre>python3 -m http.server 8080 --bind 127.0.0.1</pre>
+</li>
+<li>From the client VM, create a local port forwarding tunnel:
+        <pre>ssh -L 9090:localhost:8080 user@192.168.1.100 -N -f</pre>
+<code>-N</code> = no remote command, <code>-f</code> = background.
+    </li>
+<li>Access the remote service through the local tunnel:
+        <pre>curl http://localhost:9090</pre>
+</li>
+<li>Kill the tunnel when done:
+        <pre>pkill -f "ssh -L 9090"</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>Local port 9090 on the client tunnels traffic to the remote server's port 8080 through the encrypted SSH connection. <code>curl</code> to <code>localhost:9090</code> returns the remote web server's content.</p>
+</div>
+<!-- Lab 51 -->
+<div class="lab-separator"></div>
+<h2 id="lab-51">Lab 51: Setting Up SSH Remote Port Forwarding</h2>
+<p><strong>Objective:</strong> Expose a local service to a remote server via a reverse SSH tunnel.</p>
+<p><strong>Environment:</strong> A client VM running a local web service and a remote VM that will receive the tunnel.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Start a local web service on the client VM:
+        <pre>python3 -m http.server 3000</pre>
+</li>
+<li>Create a reverse tunnel from the client to the remote server:
+        <pre>ssh -R 8080:localhost:3000 user@192.168.1.100 -N -f</pre>
+</li>
+<li>On the remote server, test access to the forwarded port:
+        <pre>curl http://localhost:8080</pre>
+</li>
+<li>If external access is needed, edit sshd_config on the remote server:
+        <pre>GatewayPorts yes</pre>
+        Restart sshd and re-establish the tunnel.
+    </li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>The remote server can access the client's local service (port 3000) through the reverse tunnel on port 8080. With <code>GatewayPorts yes</code>, other hosts can also reach the service via the remote server's IP.</p>
+</div>
+<!-- Lab 52 -->
+<div class="lab-separator"></div>
+<h2 id="lab-52">Lab 52: Using SSH Agent for Key Management</h2>
+<p><strong>Objective:</strong> Use <code>ssh-agent</code> to cache decrypted keys and avoid repeated passphrase entry.</p>
+<p><strong>Environment:</strong> Client VM with passphrase-protected SSH keys.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Start the SSH agent:
+        <pre>eval $(ssh-agent)</pre>
+</li>
+<li>Add your key to the agent (enter passphrase once):
+        <pre>ssh-add ~/.ssh/id_ed25519</pre>
+</li>
+<li>List cached keys:
+        <pre>ssh-add -l</pre>
+</li>
+<li>Connect to servers without passphrase prompts:
+        <pre>ssh user@192.168.1.100</pre>
+</li>
+<li>Enable agent forwarding to use local keys on remote servers:
+        <pre>ssh -A user@192.168.1.100</pre>
+</li>
+<li>Stop the agent when done:
+        <pre>ssh-agent -k</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>SSH connections use cached keys without repeated passphrase prompts. Agent forwarding allows you to hop through intermediate servers using your local keys without copying private keys to remote systems.</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 7: PACKET FILTERING (Labs 53–62) -->
+<!-- ============================================================ -->
+<h1 id="section-7">Section 7: Packet Filtering (Labs 53–62)</h1>
+<p class="section-overview">Covers iptables, nftables, and firewalld for managing traffic filtering rules on Linux systems.</p>
+<!-- Lab 53 -->
+<h2 id="lab-53">Lab 53: Viewing Current Firewall Rules with iptables</h2>
+<p><strong>Objective:</strong> Display existing iptables rules and understand the default chains and tables.</p>
+<p><strong>Environment:</strong> Any Linux VM with iptables available.</p>
+<h4>Procedure</h4>
+<ol>
+<li>View the filter table rules (default):
+        <pre>sudo iptables -L -n -v</pre>
+</li>
+<li>View the NAT table rules:
+        <pre>sudo iptables -L -n -v -t nat</pre>
+</li>
+<li>View the mangle table rules:
+        <pre>sudo iptables -L -n -v -t mangle</pre>
+</li>
+<li>Understand the three default chains in the filter table:
+        <ul>
+<li><strong>INPUT:</strong> Packets destined for the local system.</li>
+<li><strong>OUTPUT:</strong> Packets originating from the local system.</li>
+<li><strong>FORWARD:</strong> Packets being routed through the system.</li>
+</ul>
+</li>
+<li>Note the default policy for each chain (ACCEPT or DROP) shown in parentheses.</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>You see the current rules in each chain with packet/byte counters. You understand the chain/table structure and the meaning of default policies (ACCEPT passes all unmatched traffic; DROP blocks it).</p>
+</div>
+<!-- Lab 54 -->
+<div class="lab-separator"></div>
+<h2 id="lab-54">Lab 54: Allowing and Blocking Ports with iptables</h2>
+<p><strong>Objective:</strong> Create rules to allow SSH and HTTP while blocking all other inbound traffic.</p>
+<p><strong>Environment:</strong> Any Linux VM. Ensure you have console access in case SSH is disrupted.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Set default policies to DROP for INPUT and FORWARD, ACCEPT for OUTPUT:
+        <pre>sudo iptables -P INPUT DROP
+sudo iptables -P FORWARD DROP
+sudo iptables -P OUTPUT ACCEPT</pre>
+</li>
+<li>Allow established and related connections (critical for return traffic):
+        <pre>sudo iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT</pre>
+</li>
+<li>Allow SSH (port 22):
+        <pre>sudo iptables -A INPUT -p tcp --dport 22 -j ACCEPT</pre>
+</li>
+<li>Allow HTTP (port 80):
+        <pre>sudo iptables -A INPUT -p tcp --dport 80 -j ACCEPT</pre>
+</li>
+<li>Allow loopback traffic:
+        <pre>sudo iptables -A INPUT -i lo -j ACCEPT</pre>
+</li>
+<li>Verify the ruleset:
+        <pre>sudo iptables -L -n -v</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>Only SSH (port 22) and HTTP (port 80) traffic is accepted. All other inbound traffic is dropped by the default INPUT policy. Existing connections continue to work due to the ESTABLISHED,RELATED rule.</p>
+</div>
+<!-- Lab 55 -->
+<div class="lab-separator"></div>
+<h2 id="lab-55">Lab 55: Saving and Restoring iptables Rules</h2>
+<p><strong>Objective:</strong> Persist iptables rules across reboots.</p>
+<p><strong>Environment:</strong> Any Linux VM with iptables rules configured (from Lab 54).</p>
+<h4>Procedure</h4>
+<ol>
+<li>Save the current rules to a file:
+        <pre>sudo iptables-save &gt; /etc/iptables.rules</pre>
+</li>
+<li>View the saved rules:
+        <pre>cat /etc/iptables.rules</pre>
+</li>
+<li>Restore rules from the file:
+        <pre>sudo iptables-restore &lt; /etc/iptables.rules</pre>
+</li>
+<li>On RHEL/CentOS, persist using the iptables service:
+        <pre>sudo service iptables save</pre>
+</li>
+<li>On Ubuntu, install and use iptables-persistent:
+        <pre>sudo apt install iptables-persistent
+sudo netfilter-persistent save</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>Rules persist after reboot. The <code>iptables-save</code> output is human-readable and can be version-controlled. Restoring rules from the file instantly re-applies the full ruleset.</p>
+</div>
+<!-- Lab 56 -->
+<div class="lab-separator"></div>
+<h2 id="lab-56">Lab 56: Blocking Specific IP Addresses with iptables</h2>
+<p><strong>Objective:</strong> Drop all traffic from a specific source IP address and log the dropped packets.</p>
+<p><strong>Environment:</strong> Two Linux VMs — one to configure rules on, one to generate traffic from.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Block a specific IP address:
+        <pre>sudo iptables -I INPUT -s 10.0.0.50 -j DROP</pre>
+</li>
+<li>Block an entire subnet:
+        <pre>sudo iptables -I INPUT -s 10.0.0.0/24 -j DROP</pre>
+</li>
+<li>Log dropped packets before dropping them:
+        <pre>sudo iptables -I INPUT -s 10.0.0.50 -j LOG --log-prefix "BLOCKED: " --log-level 4</pre>
+</li>
+<li>Verify log entries:
+        <pre>sudo journalctl -k | grep "BLOCKED"
+sudo dmesg | grep "BLOCKED"</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>Traffic from the blocked IP (<code>10.0.0.50</code>) is dropped. Log entries with the "BLOCKED:" prefix appear in the kernel log, showing source IP, destination IP, and port details for each dropped packet.</p>
+</div>
+<!-- Lab 57 -->
+<div class="lab-separator"></div>
+<h2 id="lab-57">Lab 57: Rate Limiting Connections with iptables</h2>
+<p><strong>Objective:</strong> Protect against brute-force attacks by limiting the rate of new SSH connections.</p>
+<p><strong>Environment:</strong> Any Linux VM with sshd running.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Add rate-limiting rules for SSH:
+        <pre>sudo iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --set --name SSH
+sudo iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --update --seconds 60 --hitcount 4 --name SSH -j DROP</pre>
+</li>
+<li>Test by attempting multiple rapid SSH connections from another VM:
+        <pre>for i in $(seq 1 10); do ssh -o ConnectTimeout=2 user@192.168.1.100 exit 2&gt;/dev/null; done</pre>
+</li>
+<li>Verify the rate limiting is working:
+        <pre>sudo iptables -L -n -v | grep recent</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>The first three SSH connection attempts within 60 seconds succeed. The fourth and subsequent attempts are dropped until the 60-second window expires.</p>
+</div>
+<!-- Lab 58 -->
+<div class="lab-separator"></div>
+<h2 id="lab-58">Lab 58: Managing Firewall with firewalld</h2>
+<p><strong>Objective:</strong> Use firewalld zones and services to manage traffic filtering on RHEL/CentOS.</p>
+<p><strong>Environment:</strong> CentOS/RHEL 9 VM with firewalld installed and running.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Check firewalld status:
+        <pre>sudo firewall-cmd --state</pre>
+</li>
+<li>List all available zones:
+        <pre>sudo firewall-cmd --get-zones</pre>
+</li>
+<li>Show the active zone:
+        <pre>sudo firewall-cmd --get-active-zones</pre>
+</li>
+<li>Add a service permanently:
+        <pre>sudo firewall-cmd --add-service=http --permanent</pre>
+</li>
+<li>Add a specific port permanently:
+        <pre>sudo firewall-cmd --add-port=8080/tcp --permanent</pre>
+</li>
+<li>Reload firewalld and verify:
+        <pre>sudo firewall-cmd --reload
+sudo firewall-cmd --list-all</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>The HTTP service and port 8080/tcp are open in the active firewall zone. <code>firewall-cmd --list-all</code> shows both the service and port in the allowed list.</p>
+</div>
+<!-- Lab 59 -->
+<div class="lab-separator"></div>
+<h2 id="lab-59">Lab 59: Creating Custom firewalld Zones</h2>
+<p><strong>Objective:</strong> Create a custom firewall zone with specific rules and assign an interface to it.</p>
+<p><strong>Environment:</strong> CentOS/RHEL 9 VM with firewalld and multiple network interfaces.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Create a new zone:
+        <pre>sudo firewall-cmd --permanent --new-zone=labzone</pre>
+</li>
+<li>Add allowed services:
+        <pre>sudo firewall-cmd --permanent --zone=labzone --add-service=ssh
+sudo firewall-cmd --permanent --zone=labzone --add-service=http</pre>
+</li>
+<li>Assign an interface to the zone:
+        <pre>sudo firewall-cmd --permanent --zone=labzone --change-interface=enp0s9</pre>
+</li>
+<li>Reload and verify:
+        <pre>sudo firewall-cmd --reload
+sudo firewall-cmd --zone=labzone --list-all
+sudo firewall-cmd --get-active-zones</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>The custom zone <code>labzone</code> is active on interface <code>enp0s9</code> with only SSH and HTTP services permitted. All other traffic to that interface is denied by the zone's default target.</p>
+</div>
+<!-- Lab 60 -->
+<div class="lab-separator"></div>
+<h2 id="lab-60">Lab 60: Introduction to nftables</h2>
+<p><strong>Objective:</strong> Create basic nftables rules as the modern replacement for iptables.</p>
+<p><strong>Environment:</strong> Any Linux VM. nftables is the default framework on RHEL 9 and recent Ubuntu releases.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Check the current nftables ruleset:
+        <pre>sudo nft list ruleset</pre>
+</li>
+<li>Create a table:
+        <pre>sudo nft add table inet filter</pre>
+</li>
+<li>Create an input chain with a default drop policy:
+        <pre>sudo nft add chain inet filter input { type filter hook input priority 0 \; policy drop \; }</pre>
+</li>
+<li>Add rules to allow essential traffic:
+        <pre>sudo nft add rule inet filter input ct state established,related accept
+sudo nft add rule inet filter input tcp dport 22 accept
+sudo nft add rule inet filter input iif lo accept</pre>
+</li>
+<li>List the complete ruleset:
+        <pre>sudo nft list ruleset</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>The nftables ruleset shows the <code>inet filter</code> table with an <code>input</code> chain that allows established connections, SSH, and loopback traffic. All other inbound traffic is dropped.</p>
+</div>
+<!-- Lab 61 -->
+<div class="lab-separator"></div>
+<h2 id="lab-61">Lab 61: Persisting nftables Rules</h2>
+<p><strong>Objective:</strong> Save nftables rules so they are automatically loaded at boot.</p>
+<p><strong>Environment:</strong> Any Linux VM with nftables rules configured (from Lab 60).</p>
+<h4>Procedure</h4>
+<ol>
+<li>Save the current ruleset to the configuration file:
+        <pre>sudo nft list ruleset &gt; /etc/nftables.conf</pre>
+</li>
+<li>Enable the nftables service to load rules at boot:
+        <pre>sudo systemctl enable nftables</pre>
+</li>
+<li>Verify the configuration file content:
+        <pre>cat /etc/nftables.conf</pre>
+</li>
+<li>Reboot and verify rules are loaded:
+        <pre>sudo reboot</pre>
+        After reboot:
+        <pre>sudo nft list ruleset</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>nftables rules are automatically loaded at boot from <code>/etc/nftables.conf</code>. The ruleset after reboot matches the saved configuration.</p>
+</div>
+<!-- Lab 62 -->
+<div class="lab-separator"></div>
+<h2 id="lab-62">Lab 62: Logging and Monitoring Dropped Packets</h2>
+<p><strong>Objective:</strong> Configure firewall logging to diagnose dropped connections and analyze blocked traffic.</p>
+<p><strong>Environment:</strong> Any Linux VM with a firewall configured to drop traffic.</p>
+<h4>Procedure</h4>
+<ol>
+<li>With iptables, add a LOG rule before the final DROP:
+        <pre>sudo iptables -A INPUT -j LOG --log-prefix "IPT-DROP: " --log-level 4</pre>
+</li>
+<li>With firewalld, enable logging for denied packets:
+        <pre>sudo firewall-cmd --set-log-denied=all</pre>
+</li>
+<li>Check logs for dropped packets:
+        <pre>sudo journalctl -k | grep "IPT-DROP"
+sudo dmesg | grep "IPT-DROP"</pre>
+</li>
+<li>Configure rsyslog to route firewall logs to a dedicated file. Create <code>/etc/rsyslog.d/firewall.conf</code>:
+        <pre>:msg, contains, "IPT-DROP" /var/log/firewall.log
+&amp; stop</pre>
+        Restart rsyslog:
+        <pre>sudo systemctl restart rsyslog</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>Dropped packets are logged with the "IPT-DROP:" prefix. Log entries show source/destination IPs, ports, and protocols. A dedicated log file (<code>/var/log/firewall.log</code>) captures all firewall events.</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 8: PORT REDIRECTION (Labs 63–68) -->
+<!-- ============================================================ -->
+<h1 id="section-8">Section 8: Port Redirection (Labs 63–68)</h1>
+<p class="section-overview">Covers port forwarding and redirection using iptables, nftables, firewalld, and socat.</p>
+<!-- Lab 63 -->
+<h2 id="lab-63">Lab 63: Port Redirection with iptables REDIRECT</h2>
+<p><strong>Objective:</strong> Redirect incoming traffic from one port to another on the same host.</p>
+<p><strong>Environment:</strong> A Linux VM running a service on port 8080 that you want to make accessible on port 80.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Start a web server on port 8080:
+        <pre>python3 -m http.server 8080 &amp;</pre>
+</li>
+<li>Redirect port 80 to port 8080 using iptables REDIRECT:
+        <pre>sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080</pre>
+</li>
+<li>Test from another VM by connecting to port 80:
+        <pre>curl http://192.168.1.100:80</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>Connections to port 80 are transparently redirected to the application listening on port 8080. The client is unaware of the redirection.</p>
+</div>
+<!-- Lab 64 -->
+<div class="lab-separator"></div>
+<h2 id="lab-64">Lab 64: Port Forwarding with iptables DNAT</h2>
+<p><strong>Objective:</strong> Forward traffic arriving at one host to a different backend host using Destination NAT.</p>
+<p><strong>Environment:</strong> A forwarder VM (with two interfaces or access to both networks) and a backend VM running a service on port 8080.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Enable IP forwarding on the forwarder:
+        <pre>sudo sysctl -w net.ipv4.ip_forward=1</pre>
+</li>
+<li>Add the DNAT rule:
+        <pre>sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to-destination 192.168.1.200:8080</pre>
+</li>
+<li>Allow forwarding to the backend:
+        <pre>sudo iptables -A FORWARD -p tcp -d 192.168.1.200 --dport 8080 -j ACCEPT</pre>
+</li>
+<li>Add MASQUERADE on the outgoing interface so the backend sees the forwarder as the source:
+        <pre>sudo iptables -t nat -A POSTROUTING -o enp0s8 -j MASQUERADE</pre>
+</li>
+<li>Test from an external client:
+        <pre>curl http://&lt;forwarder-ip&gt;:80</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>External clients connecting to the forwarder's port 80 receive content from the backend server's port 8080. The backend sees the forwarder's IP as the source.</p>
+</div>
+<!-- Lab 65 -->
+<div class="lab-separator"></div>
+<h2 id="lab-65">Lab 65: Port Forwarding with firewalld</h2>
+<p><strong>Objective:</strong> Configure port forwarding using firewalld on CentOS/RHEL.</p>
+<p><strong>Environment:</strong> CentOS/RHEL 9 VM acting as a forwarder and a backend VM.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Add a port forwarding rule:
+        <pre>sudo firewall-cmd --permanent --add-forward-port=port=80:proto=tcp:toport=8080:toaddr=192.168.1.200</pre>
+</li>
+<li>Enable masquerading:
+        <pre>sudo firewall-cmd --permanent --add-masquerade</pre>
+</li>
+<li>Reload and test:
+        <pre>sudo firewall-cmd --reload
+curl http://&lt;forwarder-ip&gt;:80</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>Connections to port 80 on the firewall host are forwarded to <code>192.168.1.200:8080</code>. The firewalld rules handle both DNAT and masquerade transparently.</p>
+</div>
+<!-- Lab 66 -->
+<div class="lab-separator"></div>
+<h2 id="lab-66">Lab 66: Port Forwarding with nftables</h2>
+<p><strong>Objective:</strong> Set up DNAT port forwarding using nftables.</p>
+<p><strong>Environment:</strong> A Linux VM acting as a forwarder with nftables configured.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Create the NAT table and chains:
+        <pre>sudo nft add table ip nat
+sudo nft add chain ip nat prerouting { type nat hook prerouting priority -100 \; }
+sudo nft add chain ip nat postrouting { type nat hook postrouting priority 100 \; }</pre>
+</li>
+<li>Add the DNAT rule:
+        <pre>sudo nft add rule ip nat prerouting tcp dport 80 dnat to 192.168.1.200:8080</pre>
+</li>
+<li>Add masquerade for return traffic:
+        <pre>sudo nft add rule ip nat postrouting oifname "enp0s8" masquerade</pre>
+</li>
+<li>Verify and test:
+        <pre>sudo nft list ruleset
+curl http://&lt;forwarder-ip&gt;:80</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>nftables forwards port 80 traffic to the backend server at <code>192.168.1.200:8080</code>. The nft ruleset shows both DNAT and masquerade rules.</p>
+</div>
+<!-- Lab 67 -->
+<div class="lab-separator"></div>
+<h2 id="lab-67">Lab 67: Port Redirection with socat</h2>
+<p><strong>Objective:</strong> Use socat as a userspace TCP/UDP port forwarder without kernel NAT rules.</p>
+<p><strong>Environment:</strong> Any Linux VM. Install socat.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Install socat:
+        <pre>sudo dnf install socat    # RHEL/CentOS
+sudo apt install socat    # Ubuntu</pre>
+</li>
+<li>Forward TCP connections from local port 8080 to a remote host's port 80:
+        <pre>socat TCP-LISTEN:8080,fork TCP:192.168.1.200:80 &amp;</pre>
+</li>
+<li>Test the forwarding:
+        <pre>curl http://localhost:8080</pre>
+</li>
+<li>Forward UDP traffic (e.g., DNS):
+        <pre>socat UDP-LISTEN:5353,fork UDP:192.168.1.200:53 &amp;</pre>
+</li>
+<li>To run socat as a persistent service, create a systemd unit file or use <code>nohup</code>.</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>socat relays TCP/UDP connections between local and remote ports without kernel-level NAT. It is a flexible tool for quick port forwarding during testing.</p>
+</div>
+<!-- Lab 68 -->
+<div class="lab-separator"></div>
+<h2 id="lab-68">Lab 68: Testing and Verifying Port Redirections</h2>
+<p><strong>Objective:</strong> Validate port forwarding setups using diagnostic tools.</p>
+<p><strong>Environment:</strong> A functioning port forwarding setup from any of Labs 63–67.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Test HTTP forwarding with verbose curl:
+        <pre>curl -v http://&lt;forwarder-ip&gt;:80</pre>
+</li>
+<li>Check the open port with nmap:
+        <pre>nmap -p 80 &lt;forwarder-ip&gt;</pre>
+</li>
+<li>Observe NAT in action with tcpdump on the forwarder:
+        <pre>sudo tcpdump -i enp0s8 port 80 -nn</pre>
+</li>
+<li>Check connection tracking (install conntrack-tools):
+        <pre>sudo dnf install conntrack-tools
+sudo conntrack -L
+sudo conntrack -L -n -p tcp</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>You verify that forwarding works end-to-end. <code>tcpdump</code> shows packets being translated. <code>conntrack</code> entries show the NAT state with original and translated addresses/ports.</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 9: NETWORK ADDRESS TRANSLATION - NAT (Labs 69–74) -->
+<!-- ============================================================ -->
+<h1 id="section-9">Section 9: Network Address Translation — NAT (Labs 69–74)</h1>
+<p class="section-overview">Covers source NAT, masquerading, destination NAT, and NAT troubleshooting for providing internet access to private networks.</p>
+<!-- Lab 69 -->
+<h2 id="lab-69">Lab 69: Understanding NAT Concepts</h2>
+<p><strong>Objective:</strong> Learn NAT types (SNAT, DNAT, MASQUERADE) by examining packet flow before NAT is configured.</p>
+<p><strong>Environment:</strong> Two VMs — a gateway VM with two interfaces (external + internal) and an internal-only VM.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Set up the gateway VM with two interfaces: <code>enp0s3</code> (external/NAT) and <code>enp0s8</code> (internal 192.168.100.1/24).</li>
+<li>Set up the internal VM with one interface on the internal network (192.168.100.10/24), with the gateway set to 192.168.100.1.</li>
+<li>Enable IP forwarding on the gateway:
+        <pre>sudo sysctl -w net.ipv4.ip_forward=1</pre>
+</li>
+<li>Without NAT configured, try pinging the internet from the internal VM:
+        <pre>ping -c 3 8.8.8.8</pre>
+        This should fail or timeout.
+    </li>
+<li>Capture packets on the gateway to show that the private source IP is not being translated:
+        <pre>sudo tcpdump -i enp0s3 icmp -nn</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>The internal VM cannot reach the internet because external routers do not know how to route return traffic to private (RFC 1918) addresses. <code>tcpdump</code> shows outgoing packets with the private source IP. This demonstrates why NAT is necessary.</p>
+</div>
+<!-- Lab 70 -->
+<div class="lab-separator"></div>
+<h2 id="lab-70">Lab 70: Configuring Source NAT (MASQUERADE) with iptables</h2>
+<p><strong>Objective:</strong> Enable internet access for a private network by masquerading outbound traffic.</p>
+<p><strong>Environment:</strong> The same two-VM setup from Lab 69.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Enable IP forwarding persistently:
+        <pre>echo "net.ipv4.ip_forward = 1" | sudo tee /etc/sysctl.d/99-forward.conf
+sudo sysctl --system</pre>
+</li>
+<li>Add masquerade on the external interface:
+        <pre>sudo iptables -t nat -A POSTROUTING -o enp0s3 -j MASQUERADE</pre>
+</li>
+<li>Add FORWARD rules:
+        <pre>sudo iptables -A FORWARD -i enp0s8 -o enp0s3 -j ACCEPT
+sudo iptables -A FORWARD -i enp0s3 -o enp0s8 -m state --state ESTABLISHED,RELATED -j ACCEPT</pre>
+</li>
+<li>Test from the internal VM:
+        <pre>ping -c 3 8.8.8.8
+curl -s http://example.com</pre>
+</li>
+<li>Capture packets on the gateway's external interface to verify translation:
+        <pre>sudo tcpdump -i enp0s3 icmp -nn</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>The internal VM can reach external networks. <code>tcpdump</code> on the external interface shows packets with the gateway's external IP as the source, confirming NAT translation.</p>
+</div>
+<!-- Lab 71 -->
+<div class="lab-separator"></div>
+<h2 id="lab-71">Lab 71: Configuring SNAT with a Static IP</h2>
+<p><strong>Objective:</strong> Use SNAT instead of MASQUERADE for better performance when the external IP is static.</p>
+<p><strong>Environment:</strong> Gateway VM with a known static external IP.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Replace the MASQUERADE rule with SNAT (first remove the old rule):
+        <pre>sudo iptables -t nat -D POSTROUTING -o enp0s3 -j MASQUERADE
+sudo iptables -t nat -A POSTROUTING -o enp0s3 -j SNAT --to-source 203.0.113.10</pre>
+</li>
+<li>Test from the internal VM:
+        <pre>ping -c 3 8.8.8.8</pre>
+</li>
+<li>Discuss: SNAT is more efficient than MASQUERADE because the kernel does not need to look up the outgoing IP for each packet. Use MASQUERADE for dynamic IPs (DHCP), SNAT for static IPs.</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>NAT functions identically to masquerade but uses a specific source IP (<code>203.0.113.10</code>). Performance is slightly better because the kernel skips the interface IP lookup.</p>
+</div>
+<!-- Lab 72 -->
+<div class="lab-separator"></div>
+<h2 id="lab-72">Lab 72: Configuring NAT with nftables</h2>
+<p><strong>Objective:</strong> Implement masquerade NAT using nftables instead of iptables.</p>
+<p><strong>Environment:</strong> The same two-VM gateway setup. Flush any existing iptables NAT rules first.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Create the NAT table and postrouting chain:
+        <pre>sudo nft add table ip nat
+sudo nft add chain ip nat postrouting { type nat hook postrouting priority 100 \; }</pre>
+</li>
+<li>Add the masquerade rule:
+        <pre>sudo nft add rule ip nat postrouting oifname "enp0s3" masquerade</pre>
+</li>
+<li>Enable IP forwarding (if not already done):
+        <pre>sudo sysctl -w net.ipv4.ip_forward=1</pre>
+</li>
+<li>Test from the internal VM:
+        <pre>ping -c 3 8.8.8.8</pre>
+</li>
+<li>Verify the nftables ruleset:
+        <pre>sudo nft list ruleset</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>The internal network accesses external resources via nftables NAT. The ruleset shows the masquerade rule in the postrouting chain.</p>
+</div>
+<!-- Lab 73 -->
+<div class="lab-separator"></div>
+<h2 id="lab-73">Lab 73: Configuring NAT with firewalld</h2>
+<p><strong>Objective:</strong> Enable masquerading through firewalld zone configuration.</p>
+<p><strong>Environment:</strong> CentOS/RHEL 9 gateway VM with firewalld active.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Add masquerade to the external zone:
+        <pre>sudo firewall-cmd --zone=external --add-masquerade --permanent</pre>
+</li>
+<li>Assign interfaces to zones:
+        <pre>sudo firewall-cmd --zone=external --change-interface=enp0s3 --permanent
+sudo firewall-cmd --zone=internal --change-interface=enp0s8 --permanent</pre>
+</li>
+<li>Allow forwarding between zones:
+        <pre>sudo firewall-cmd --permanent --direct --add-rule ipv4 filter FORWARD 0 -i enp0s8 -o enp0s3 -j ACCEPT
+sudo firewall-cmd --permanent --direct --add-rule ipv4 filter FORWARD 0 -i enp0s3 -o enp0s8 -m state --state ESTABLISHED,RELATED -j ACCEPT</pre>
+</li>
+<li>Reload and test:
+        <pre>sudo firewall-cmd --reload</pre>
+        From the internal VM:
+        <pre>ping -c 3 8.8.8.8</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>firewalld handles NAT for the internal network through zone-based masquerading. The internal VM accesses external networks transparently.</p>
+</div>
+<!-- Lab 74 -->
+<div class="lab-separator"></div>
+<h2 id="lab-74">Lab 74: NAT Troubleshooting and Connection Tracking</h2>
+<p><strong>Objective:</strong> Diagnose NAT issues using connection tracking and simultaneous packet captures.</p>
+<p><strong>Environment:</strong> An active NAT gateway setup from any of Labs 70–73.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Install conntrack-tools:
+        <pre>sudo dnf install conntrack-tools    # RHEL/CentOS
+sudo apt install conntrack           # Ubuntu</pre>
+</li>
+<li>View active NAT connections:
+        <pre>sudo conntrack -L
+sudo conntrack -L -n -p tcp</pre>
+</li>
+<li>Monitor new connections in real time:
+        <pre>sudo conntrack -E</pre>
+</li>
+<li>Capture packets on both interfaces simultaneously (open two terminals):
+        Terminal 1 (internal):
+        <pre>sudo tcpdump -i enp0s8 icmp -nn</pre>
+        Terminal 2 (external):
+        <pre>sudo tcpdump -i enp0s3 icmp -nn</pre>
+</li>
+<li>Check NAT counters:
+        <pre>sudo iptables -t nat -L -n -v</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>You trace a packet through the NAT process: original source IP on the internal interface, translated source IP on the external interface. Connection tracking entries show both the original and reply tuples. You can diagnose common NAT failures (forwarding not enabled, missing masquerade rule, firewall blocking FORWARD chain).</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 10: STATIC ROUTING (Labs 75–80) -->
+<!-- ============================================================ -->
+<h1 id="section-10">Section 10: Static Routing (Labs 75–80)</h1>
+<p class="section-overview">Covers manual route management, multi-hop routing, policy routing, and route troubleshooting between network segments.</p>
+<!-- Lab 75 -->
+<h2 id="lab-75">Lab 75: Viewing and Understanding the Routing Table</h2>
+<p><strong>Objective:</strong> Read and interpret every field in the Linux routing table.</p>
+<p><strong>Environment:</strong> Any Linux VM with at least one configured interface and a default route.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Display the routing table:
+        <pre>ip route show</pre>
+</li>
+<li>Display using the legacy <code>route</code> command:
+        <pre>route -n</pre>
+</li>
+<li>Identify the fields: destination network, gateway (<code>via</code>), output interface (<code>dev</code>), metric, scope, and protocol.</li>
+<li>Determine which route a specific destination will use:
+        <pre>ip route get 8.8.8.8
+ip route get 192.168.1.50</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>You understand each field in the routing table. You can use <code>ip route get</code> to determine exactly which route the kernel selects for any given destination IP.</p>
+</div>
+<!-- Lab 76 -->
+<div class="lab-separator"></div>
+<h2 id="lab-76">Lab 76: Adding and Deleting Static Routes Temporarily</h2>
+<p><strong>Objective:</strong> Add and remove static routes using the <code>ip</code> command for immediate, temporary changes.</p>
+<p><strong>Environment:</strong> Any Linux VM.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Add a static route:
+        <pre>sudo ip route add 10.10.0.0/16 via 192.168.1.254 dev enp0s8</pre>
+</li>
+<li>Add a route with a custom metric:
+        <pre>sudo ip route add 10.10.0.0/16 via 192.168.1.253 dev enp0s8 metric 200</pre>
+</li>
+<li>Delete a route:
+        <pre>sudo ip route del 10.10.0.0/16 via 192.168.1.254</pre>
+</li>
+<li>Verify:
+        <pre>ip route show</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>Static routes are added and removed immediately. These temporary routes do not survive a reboot, demonstrating the need for persistent configuration via nmcli or Netplan.</p>
+</div>
+<!-- Lab 77 -->
+<div class="lab-separator"></div>
+<h2 id="lab-77">Lab 77: Configuring Persistent Static Routes</h2>
+<p><strong>Objective:</strong> Make static routes persistent across reboots using NetworkManager or Netplan.</p>
+<p><strong>Environment:</strong> CentOS/RHEL 9 (nmcli) or Ubuntu (Netplan).</p>
+<h4>Procedure</h4>
+<ol>
+<li>With nmcli (RHEL/CentOS):
+        <pre>sudo nmcli con mod enp0s8 +ipv4.routes "10.10.0.0/16 192.168.1.254 100"
+sudo nmcli con up enp0s8</pre>
+</li>
+<li>With Netplan (Ubuntu), add a routes section:
+        <pre>network:
+  version: 2
+  ethernets:
+    enp0s8:
+      addresses:
+        - 192.168.1.50/24
+      routes:
+        - to: 10.10.0.0/16
+          via: 192.168.1.254
+          metric: 100</pre>
+        Apply:
+        <pre>sudo netplan apply</pre>
+</li>
+<li>Verify and reboot:
+        <pre>ip route show
+sudo reboot</pre>
+        After reboot:
+        <pre>ip route show</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>The static route to <code>10.10.0.0/16</code> with metric 100 persists across reboots.</p>
+</div>
+<!-- Lab 78 -->
+<div class="lab-separator"></div>
+<h2 id="lab-78">Lab 78: Building a Multi-Segment Routed Lab Network</h2>
+<p><strong>Objective:</strong> Route traffic between three network segments using two router VMs.</p>
+<p><strong>Environment:</strong> Four VMs — Host A (192.168.1.0/24), Router1 (two interfaces), Router2 (two interfaces), Host C (10.0.0.0/24), with 172.16.0.0/24 as the transit network between routers.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Enable IP forwarding on both routers:
+        <pre>sudo sysctl -w net.ipv4.ip_forward=1</pre>
+</li>
+<li>On Router1 (192.168.1.1 + 172.16.0.1), add a route to Network C:
+        <pre>sudo ip route add 10.0.0.0/24 via 172.16.0.2</pre>
+</li>
+<li>On Router2 (172.16.0.2 + 10.0.0.1), add a route to Network A:
+        <pre>sudo ip route add 192.168.1.0/24 via 172.16.0.1</pre>
+</li>
+<li>On Host A (192.168.1.10), set the gateway:
+        <pre>sudo ip route add default via 192.168.1.1</pre>
+</li>
+<li>On Host C (10.0.0.10), set the gateway:
+        <pre>sudo ip route add default via 10.0.0.1</pre>
+</li>
+<li>Test end-to-end connectivity:
+        <pre>ping -c 3 10.0.0.10         # from Host A
+traceroute 10.0.0.10        # observe both hops</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>Host A can ping Host C through both routers. <code>traceroute</code> from Host A to Host C shows two hops (Router1 and Router2), confirming the multi-segment routing setup.</p>
+</div>
+<!-- Lab 79 -->
+<div class="lab-separator"></div>
+<h2 id="lab-79">Lab 79: Configuring a Default Gateway</h2>
+<p><strong>Objective:</strong> Set, change, and remove the default gateway and observe the impact on internet access.</p>
+<p><strong>Environment:</strong> Any Linux VM with a valid gateway.</p>
+<h4>Procedure</h4>
+<ol>
+<li>View the current default gateway:
+        <pre>ip route show default</pre>
+</li>
+<li>Remove the default gateway:
+        <pre>sudo ip route del default</pre>
+        Test internet access (should fail):
+        <pre>ping -c 2 8.8.8.8</pre>
+</li>
+<li>Add a new default gateway:
+        <pre>sudo ip route add default via 192.168.1.1</pre>
+        Test internet access again (should work):
+        <pre>ping -c 2 8.8.8.8</pre>
+</li>
+<li>Set persistently with nmcli:
+        <pre>sudo nmcli con mod enp0s8 ipv4.gateway 192.168.1.1
+sudo nmcli con up enp0s8</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>Internet access fails when the default gateway is removed and is restored when a correct gateway is added. The nmcli-configured gateway persists across reboots.</p>
+</div>
+<!-- Lab 80 -->
+<div class="lab-separator"></div>
+<h2 id="lab-80">Lab 80: Troubleshooting Routing Issues</h2>
+<p><strong>Objective:</strong> Diagnose and fix common routing problems using a structured approach.</p>
+<p><strong>Environment:</strong> A multi-VM lab network. Deliberately introduce routing problems for the student to find and fix.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Introduce problems (pick one or more): wrong gateway, missing route, or disabled IP forwarding on a router.</li>
+<li>Check route selection for a specific destination:
+        <pre>ip route get 10.0.0.10</pre>
+</li>
+<li>Trace where packets stop:
+        <pre>traceroute 10.0.0.10</pre>
+</li>
+<li>Check the routing table for conflicts or missing entries:
+        <pre>ip route show</pre>
+</li>
+<li>Verify IP forwarding is enabled on routers:
+        <pre>sysctl net.ipv4.ip_forward</pre>
+</li>
+<li>Check reverse path filtering:
+        <pre>sysctl net.ipv4.conf.all.rp_filter</pre>
+</li>
+<li>Fix the identified issue (e.g., add the missing route, enable forwarding, correct the gateway).</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>You systematically identify routing misconfigurations using <code>ip route get</code>, <code>traceroute</code>, and <code>sysctl</code>. After correcting the issue, end-to-end connectivity is restored.</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 11: NETWORK BRIDGES (Labs 81–86) -->
+<!-- ============================================================ -->
+<h1 id="section-11">Section 11: Network Bridges (Labs 81–86)</h1>
+<p class="section-overview">Covers creating and managing Linux bridge interfaces to connect network segments at Layer 2.</p>
+<!-- Lab 81 -->
+<h2 id="lab-81">Lab 81: Creating a Network Bridge with nmcli</h2>
+<p><strong>Objective:</strong> Create a bridge interface and add ports using NetworkManager.</p>
+<p><strong>Environment:</strong> A Linux VM with at least two network interfaces.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Create the bridge:
+        <pre>sudo nmcli con add type bridge ifname br0 con-name br0 ipv4.addresses 192.168.1.1/24 ipv4.method manual</pre>
+</li>
+<li>Add a slave interface to the bridge:
+        <pre>sudo nmcli con add type bridge-slave ifname enp0s9 master br0</pre>
+</li>
+<li>Bring the bridge up:
+        <pre>sudo nmcli con up br0</pre>
+</li>
+<li>Verify:
+        <pre>bridge link show
+ip addr show br0</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>Bridge <code>br0</code> is active with <code>enp0s9</code> as a member port. The bridge has the assigned IP address <code>192.168.1.1/24</code>.</p>
+</div>
+<!-- Lab 82 -->
+<div class="lab-separator"></div>
+<h2 id="lab-82">Lab 82: Creating a Bridge with the ip and brctl Commands</h2>
+<p><strong>Objective:</strong> Use low-level tools to create and manage Linux bridges.</p>
+<p><strong>Environment:</strong> Any Linux VM with bridge-utils installed.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Create a bridge device:
+        <pre>sudo ip link add name br0 type bridge</pre>
+</li>
+<li>Add a port to the bridge:
+        <pre>sudo ip link set enp0s9 master br0</pre>
+</li>
+<li>Bring up the bridge and port:
+        <pre>sudo ip link set br0 up
+sudo ip link set enp0s9 up</pre>
+</li>
+<li>Assign an IP address:
+        <pre>sudo ip addr add 192.168.1.1/24 dev br0</pre>
+</li>
+<li>Show bridge information:
+        <pre>bridge link show
+sudo brctl show
+sudo brctl showstp br0</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>The bridge is functional. Connected VMs on the bridged interfaces can communicate at Layer 2. <code>brctl show</code> lists the bridge and its member ports.</p>
+</div>
+<!-- Lab 83 -->
+<div class="lab-separator"></div>
+<h2 id="lab-83">Lab 83: Bridging Two Network Interfaces</h2>
+<p><strong>Objective:</strong> Bridge two NICs to create a transparent Layer 2 switch.</p>
+<p><strong>Environment:</strong> A VM with at least two NICs (<code>enp0s8</code>, <code>enp0s9</code>) and VMs connected to each.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Create bridge and add both interfaces:
+        <pre>sudo ip link add name br0 type bridge
+sudo ip link set enp0s8 master br0
+sudo ip link set enp0s9 master br0
+sudo ip link set br0 up
+sudo ip link set enp0s8 up
+sudo ip link set enp0s9 up</pre>
+</li>
+<li>Remove any IP addresses from the member interfaces (IP goes on the bridge):
+        <pre>sudo ip addr flush dev enp0s8
+sudo ip addr flush dev enp0s9
+sudo ip addr add 192.168.1.1/24 dev br0</pre>
+</li>
+<li>From VMs connected to each interface, ping each other to verify Layer 2 bridging.</li>
+<li>Check the MAC address table:
+        <pre>sudo brctl showmacs br0</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>VMs on both physical interfaces are on the same Layer 2 segment and communicate directly. The MAC address table shows learned addresses on each port.</p>
+</div>
+<!-- Lab 84 -->
+<div class="lab-separator"></div>
+<h2 id="lab-84">Lab 84: Configuring STP on a Linux Bridge</h2>
+<p><strong>Objective:</strong> Enable and configure Spanning Tree Protocol to prevent Layer 2 loops.</p>
+<p><strong>Environment:</strong> A Linux VM with a bridge configured (from Lab 82 or 83).</p>
+<h4>Procedure</h4>
+<ol>
+<li>Enable STP on the bridge:
+        <pre>sudo brctl stp br0 on</pre>
+        Or using ip:
+        <pre>sudo ip link set br0 type bridge stp_state 1</pre>
+</li>
+<li>Set the bridge priority (lower is preferred as root bridge):
+        <pre>sudo brctl setbridgeprio br0 8192</pre>
+</li>
+<li>Set path cost for a port:
+        <pre>sudo brctl setpathcost enp0s9 10</pre>
+</li>
+<li>View STP state:
+        <pre>sudo brctl showstp br0</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>STP is active on the bridge. Port states (forwarding, blocking, listening, learning) are visible. The bridge priority and path costs influence root bridge election and port roles.</p>
+</div>
+<!-- Lab 85 -->
+<div class="lab-separator"></div>
+<h2 id="lab-85">Lab 85: Creating a Bridge for KVM/QEMU Virtual Machines</h2>
+<p><strong>Objective:</strong> Set up a bridge that KVM VMs attach to for direct access to the physical network.</p>
+<p><strong>Environment:</strong> A KVM/libvirt host with at least one physical NIC.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Create the bridge with nmcli and add the physical interface:
+        <pre>sudo nmcli con add type bridge ifname br0 con-name br0
+sudo nmcli con add type bridge-slave ifname enp0s3 master br0
+sudo nmcli con up br0</pre>
+</li>
+<li>When creating KVM VMs, specify the bridge network:
+        <pre>virt-install --name testvm --ram 1024 --disk size=10 --network bridge=br0 --cdrom /path/to/iso</pre>
+</li>
+<li>Verify the VM gets an IP on the physical network:
+        <pre>sudo virsh domiflist testvm
+bridge link show</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>KVM virtual machines have direct Layer 2 access to the physical network through the bridge. The VMs obtain IP addresses from the physical network's DHCP server (or use static IPs on the same subnet).</p>
+</div>
+<!-- Lab 86 -->
+<div class="lab-separator"></div>
+<h2 id="lab-86">Lab 86: Persistent Bridge Configuration with Netplan (Ubuntu)</h2>
+<p><strong>Objective:</strong> Configure a bridge declaratively using Netplan on Ubuntu.</p>
+<p><strong>Environment:</strong> Ubuntu 22.04/24.04 VM with at least two interfaces.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Edit the Netplan configuration:
+        <pre>sudo nano /etc/netplan/01-bridge.yaml</pre>
+        Add:
+        <pre>network:
+  version: 2
+  ethernets:
+    enp0s8:
+      dhcp4: false
+    enp0s9:
+      dhcp4: false
+  bridges:
+    br0:
+      dhcp4: false
+      addresses:
+        - 192.168.1.1/24
+      interfaces:
+        - enp0s8
+        - enp0s9</pre>
+</li>
+<li>Apply the configuration:
+        <pre>sudo netplan apply</pre>
+</li>
+<li>Verify:
+        <pre>ip addr show br0
+bridge link show</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>The bridge <code>br0</code> is created at boot via Netplan with both <code>enp0s8</code> and <code>enp0s9</code> as member ports and the correct IP address assigned.</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 12: BONDING INTERFACES (Labs 87–91) -->
+<!-- ============================================================ -->
+<h1 id="section-12">Section 12: Bonding Interfaces (Labs 87–91)</h1>
+<p class="section-overview">Covers network interface bonding (teaming) for redundancy and increased throughput.</p>
+<!-- Lab 87 -->
+<h2 id="lab-87">Lab 87: Creating a Bond Interface with nmcli (Mode 1 — Active-Backup)</h2>
+<p><strong>Objective:</strong> Bond two NICs for failover redundancy using active-backup mode.</p>
+<p><strong>Environment:</strong> A Linux VM with at least two NICs.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Create the bond interface:
+        <pre>sudo nmcli con add type bond ifname bond0 con-name bond0 \
+  bond.options "mode=active-backup,miimon=100" \
+  ipv4.addresses 192.168.1.10/24 ipv4.method manual</pre>
+</li>
+<li>Add slave interfaces:
+        <pre>sudo nmcli con add type bond-slave ifname enp0s8 master bond0
+sudo nmcli con add type bond-slave ifname enp0s9 master bond0</pre>
+</li>
+<li>Bring up the bond:
+        <pre>sudo nmcli con up bond0</pre>
+</li>
+<li>Verify the bond status:
+        <pre>cat /proc/net/bonding/bond0</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>The bond <code>bond0</code> is active with one NIC as the active slave and the other as backup. The bond IP (<code>192.168.1.10/24</code>) is reachable. The <code>/proc/net/bonding/bond0</code> file shows both slaves and their states.</p>
+</div>
+<!-- Lab 88 -->
+<div class="lab-separator"></div>
+<h2 id="lab-88">Lab 88: Configuring Bond Mode 0 (Balance Round-Robin)</h2>
+<p><strong>Objective:</strong> Set up round-robin bonding for increased aggregate throughput.</p>
+<p><strong>Environment:</strong> A Linux VM with at least two NICs.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Create the bond with round-robin mode:
+        <pre>sudo nmcli con add type bond ifname bond0 con-name bond0 \
+  bond.options "mode=balance-rr,miimon=100" \
+  ipv4.addresses 192.168.1.10/24 ipv4.method manual</pre>
+</li>
+<li>Add slave interfaces and bring up.</li>
+<li>Verify:
+        <pre>cat /proc/net/bonding/bond0</pre>
+</li>
+<li>Test throughput with iperf3 and observe traffic distribution:
+        <pre>ip -s link show bond0</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>Traffic is distributed across both NICs in round-robin fashion. Aggregate throughput may increase compared to a single NIC (dependent on switch configuration and traffic patterns).</p>
+</div>
+<!-- Lab 89 -->
+<div class="lab-separator"></div>
+<h2 id="lab-89">Lab 89: Configuring Bond Mode 4 (802.3ad / LACP)</h2>
+<p><strong>Objective:</strong> Set up LACP bonding for standards-based link aggregation.</p>
+<p><strong>Environment:</strong> A Linux VM with at least two NICs. Full LACP requires switch support.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Create the bond with LACP mode:
+        <pre>sudo nmcli con add type bond ifname bond0 con-name bond0 \
+  bond.options "mode=802.3ad,miimon=100,lacp_rate=fast" \
+  ipv4.addresses 192.168.1.10/24 ipv4.method manual</pre>
+</li>
+<li>Add slave interfaces and bring up.</li>
+<li>Verify LACP negotiation:
+        <pre>cat /proc/net/bonding/bond0</pre>
+        Look for "LACP rate:" and "Partner" information.
+    </li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>LACP negotiation succeeds if the switch supports 802.3ad. The bond status shows LACP partner information. In a VM-only lab without switch support, the bond may show that LACP negotiation is pending — this is normal and educational.</p>
+</div>
+<!-- Lab 90 -->
+<div class="lab-separator"></div>
+<h2 id="lab-90">Lab 90: Testing Bond Failover</h2>
+<p><strong>Objective:</strong> Verify that active-backup bonding maintains connectivity when a slave fails.</p>
+<p><strong>Environment:</strong> A VM with an active-backup bond from Lab 87 and a peer VM for continuous ping.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Start a continuous ping from the peer VM:
+        <pre>ping 192.168.1.10</pre>
+</li>
+<li>Identify the currently active slave:
+        <pre>cat /proc/net/bonding/bond0 | grep "Currently Active"</pre>
+</li>
+<li>Simulate a link failure by bringing down the active slave:
+        <pre>sudo ip link set enp0s8 down</pre>
+</li>
+<li>Observe the ping — after a brief interruption (based on miimon), it should resume.</li>
+<li>Check which slave is now active:
+        <pre>cat /proc/net/bonding/bond0 | grep "Currently Active"</pre>
+</li>
+<li>Bring the original slave back up:
+        <pre>sudo ip link set enp0s8 up</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>Network connectivity continues during failover with only a brief interruption (≤ miimon interval). The active slave switches automatically. Bringing the failed interface back up restores it as a backup slave.</p>
+</div>
+<!-- Lab 91 -->
+<div class="lab-separator"></div>
+<h2 id="lab-91">Lab 91: Bonding with VLAN Tagging</h2>
+<p><strong>Objective:</strong> Configure a VLAN on top of a bonded interface for segmented traffic.</p>
+<p><strong>Environment:</strong> A VM with a bond interface configured (from Lab 87).</p>
+<h4>Procedure</h4>
+<ol>
+<li>Create a VLAN on top of the bond:
+        <pre>sudo nmcli con add type vlan ifname bond0.100 dev bond0 id 100 \
+  ipv4.addresses 10.100.0.10/24 ipv4.method manual</pre>
+</li>
+<li>Bring the VLAN interface up:
+        <pre>sudo nmcli con up vlan-bond0.100</pre>
+</li>
+<li>Verify the VLAN interface:
+        <pre>ip -d link show bond0.100</pre>
+</li>
+<li>Test connectivity to another VM on VLAN 100:
+        <pre>ping -c 3 10.100.0.20</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>VLAN 100 is active on top of <code>bond0</code>. The VLAN interface has its own IP address (<code>10.100.0.10/24</code>). Traffic is tagged with VLAN ID 100 on the wire. The bond provides redundancy while the VLAN provides network segmentation.</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 13: REVERSE PROXIES (Labs 92–96) -->
+<!-- ============================================================ -->
+<h1 id="section-13">Section 13: Reverse Proxies (Labs 92–96)</h1>
+<p class="section-overview">Covers configuring Nginx and Apache as reverse proxies with TLS termination and basic access control.</p>
+<!-- Lab 92 -->
+<h2 id="lab-92">Lab 92: Installing and Configuring Nginx as a Basic Reverse Proxy</h2>
+<p><strong>Objective:</strong> Set up Nginx to proxy HTTP requests to a backend server.</p>
+<p><strong>Environment:</strong> A frontend VM with Nginx and a backend VM (or local process) running a web server on port 8080.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Install Nginx:
+        <pre>sudo dnf install nginx    # RHEL/CentOS
+sudo apt install nginx    # Ubuntu</pre>
+</li>
+<li>Start a backend web server (for testing):
+        <pre>python3 -m http.server 8080 &amp;</pre>
+</li>
+<li>Create the reverse proxy configuration:
+        <pre>sudo nano /etc/nginx/conf.d/reverse-proxy.conf</pre>
+        Add:
+        <pre>server {
+    listen 80;
+    server_name _;
+
+    location / {
+        proxy_pass http://192.168.1.200:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}</pre>
+</li>
+<li>Test and restart Nginx:
+        <pre>sudo nginx -t
+sudo systemctl restart nginx</pre>
+</li>
+<li>Test the proxy:
+        <pre>curl http://localhost</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>Requests to Nginx on port 80 are forwarded to the backend on port 8080. The response content comes from the backend server. The backend receives the real client IP in the <code>X-Real-IP</code> header.</p>
+</div>
+<!-- Lab 93 -->
+<div class="lab-separator"></div>
+<h2 id="lab-93">Lab 93: Configuring Nginx Reverse Proxy with Multiple Backends (Path-Based)</h2>
+<p><strong>Objective:</strong> Route different URL paths to different backend servers.</p>
+<p><strong>Environment:</strong> An Nginx VM and two backend VMs (or two local processes on different ports).</p>
+<h4>Procedure</h4>
+<ol>
+<li>Set up two backend servers on different VMs or ports:
+        <pre># Backend 1
+cd /tmp/app1 &amp;&amp; python3 -m http.server 8081 &amp;
+# Backend 2
+cd /tmp/app2 &amp;&amp; python3 -m http.server 8082 &amp;</pre>
+</li>
+<li>Configure path-based routing in Nginx:
+        <pre>server {
+    listen 80;
+
+    location /app1/ {
+        proxy_pass http://192.168.1.201:8081/;
+    }
+
+    location /app2/ {
+        proxy_pass http://192.168.1.202:8082/;
+    }
+}</pre>
+</li>
+<li>Restart and test:
+        <pre>sudo nginx -t &amp;&amp; sudo systemctl restart nginx
+curl http://localhost/app1/
+curl http://localhost/app2/</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>Requests to <code>/app1/</code> are proxied to backend 1, and requests to <code>/app2/</code> are proxied to backend 2. Each path serves content from its respective backend.</p>
+</div>
+<!-- Lab 94 -->
+<div class="lab-separator"></div>
+<h2 id="lab-94">Lab 94: Setting Up TLS Termination with Nginx</h2>
+<p><strong>Objective:</strong> Configure HTTPS on the reverse proxy using a self-signed certificate for TLS termination.</p>
+<p><strong>Environment:</strong> An Nginx VM with OpenSSL installed.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Create the SSL directory and generate a self-signed certificate:
+        <pre>sudo mkdir -p /etc/nginx/ssl
+sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout /etc/nginx/ssl/server.key \
+  -out /etc/nginx/ssl/server.crt \
+  -subj "/CN=lab.example.com"</pre>
+</li>
+<li>Configure Nginx for HTTPS with HTTP-to-HTTPS redirect:
+        <pre>server {
+    listen 80;
+    server_name lab.example.com;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name lab.example.com;
+
+    ssl_certificate /etc/nginx/ssl/server.crt;
+    ssl_certificate_key /etc/nginx/ssl/server.key;
+
+    location / {
+        proxy_pass http://192.168.1.200:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}</pre>
+</li>
+<li>Restart and test:
+        <pre>sudo nginx -t &amp;&amp; sudo systemctl restart nginx
+curl -k https://localhost</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>HTTPS connections are terminated at Nginx; the backend receives plain HTTP. HTTP requests are automatically redirected to HTTPS. The <code>-k</code> flag in curl bypasses the self-signed certificate warning.</p>
+</div>
+<!-- Lab 95 -->
+<div class="lab-separator"></div>
+<h2 id="lab-95">Lab 95: Configuring Apache as a Reverse Proxy</h2>
+<p><strong>Objective:</strong> Use Apache httpd with <code>mod_proxy</code> for reverse proxying.</p>
+<p><strong>Environment:</strong> A Linux VM with Apache httpd installed.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Install Apache:
+        <pre>sudo dnf install httpd    # RHEL/CentOS
+sudo apt install apache2  # Ubuntu</pre>
+</li>
+<li>Enable proxy modules (Ubuntu):
+        <pre>sudo a2enmod proxy proxy_http</pre>
+        On RHEL/CentOS, verify proxy modules are loaded in the httpd configuration.
+    </li>
+<li>Create a VirtualHost for the reverse proxy:
+        <pre>sudo nano /etc/httpd/conf.d/reverse-proxy.conf</pre>
+        (Or <code>/etc/apache2/sites-available/reverse-proxy.conf</code> on Ubuntu)
+        <pre>&lt;VirtualHost *:80&gt;
+    ServerName lab.example.com
+    ProxyPreserveHost On
+    ProxyPass / http://192.168.1.200:8080/
+    ProxyPassReverse / http://192.168.1.200:8080/
+&lt;/VirtualHost&gt;</pre>
+</li>
+<li>Restart Apache and test:
+        <pre>sudo systemctl restart httpd    # RHEL/CentOS
+sudo systemctl restart apache2  # Ubuntu
+curl http://localhost</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>Apache proxies HTTP requests to the backend server. <code>ProxyPassReverse</code> rewrites response headers so redirects work correctly through the proxy.</p>
+</div>
+<!-- Lab 96 -->
+<div class="lab-separator"></div>
+<h2 id="lab-96">Lab 96: Adding Access Control to a Reverse Proxy</h2>
+<p><strong>Objective:</strong> Restrict reverse proxy access by IP address and/or basic authentication.</p>
+<p><strong>Environment:</strong> An Nginx reverse proxy from Lab 92 or 94.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Restrict access by IP address in the Nginx location block:
+        <pre>location / {
+    allow 192.168.1.0/24;
+    deny all;
+    proxy_pass http://192.168.1.200:8080;
+}</pre>
+</li>
+<li>Create a password file for basic authentication:
+        <pre>sudo dnf install httpd-tools    # RHEL/CentOS
+sudo apt install apache2-utils  # Ubuntu
+sudo htpasswd -c /etc/nginx/.htpasswd labuser</pre>
+</li>
+<li>Add basic auth to the Nginx configuration:
+        <pre>location / {
+    auth_basic "Restricted Access";
+    auth_basic_user_file /etc/nginx/.htpasswd;
+    proxy_pass http://192.168.1.200:8080;
+}</pre>
+</li>
+<li>Restart and test:
+        <pre>sudo nginx -t &amp;&amp; sudo systemctl restart nginx
+curl http://localhost                           # expect 401
+curl -u labuser:password http://localhost       # expect 200</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>Requests from unauthorized IPs receive HTTP 403 (Forbidden). Requests without credentials receive HTTP 401 (Unauthorized). Only authenticated users from allowed IPs can access the proxied content.</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 14: LOAD BALANCERS (Labs 97–100) -->
+<!-- ============================================================ -->
+<h1 id="section-14">Section 14: Load Balancers (Labs 97–100)</h1>
+<p class="section-overview">Covers configuring HTTP and TCP load balancing using Nginx and HAProxy with health checking and session persistence.</p>
+<!-- Lab 97 -->
+<h2 id="lab-97">Lab 97: Configuring Nginx as a Round-Robin HTTP Load Balancer</h2>
+<p><strong>Objective:</strong> Distribute HTTP traffic evenly across multiple backend servers.</p>
+<p><strong>Environment:</strong> An Nginx VM and three backend VMs (or three local processes), each returning a unique identifier.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Set up three backend servers that identify themselves (e.g., each returns its hostname):
+        <pre># On Backend 1 (192.168.1.201):
+echo "Backend 1" &gt; /tmp/index.html &amp;&amp; cd /tmp &amp;&amp; python3 -m http.server 8080 &amp;
+# Repeat on Backend 2 (192.168.1.202) and Backend 3 (192.168.1.203)</pre>
+</li>
+<li>Configure Nginx upstream and proxy:
+        <pre>upstream backend {
+    server 192.168.1.201:8080;
+    server 192.168.1.202:8080;
+    server 192.168.1.203:8080;
+}
+
+server {
+    listen 80;
+
+    location / {
+        proxy_pass http://backend;
+    }
+}</pre>
+</li>
+<li>Restart and test with repeated requests:
+        <pre>sudo nginx -t &amp;&amp; sudo systemctl restart nginx
+for i in $(seq 1 9); do curl -s http://localhost; done</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>Requests are distributed evenly across all three backends in round-robin rotation. The output cycles through "Backend 1", "Backend 2", "Backend 3" repeatedly.</p>
+</div>
+<!-- Lab 98 -->
+<div class="lab-separator"></div>
+<h2 id="lab-98">Lab 98: Configuring Nginx Load Balancer with Weighted and Least-Connections Methods</h2>
+<p><strong>Objective:</strong> Use advanced load balancing algorithms to control traffic distribution.</p>
+<p><strong>Environment:</strong> Nginx VM with multiple backends (from Lab 97).</p>
+<h4>Procedure</h4>
+<ol>
+<li>Configure weighted round-robin (backend 1 gets 5x more traffic):
+        <pre>upstream backend {
+    server 192.168.1.201:8080 weight=5;
+    server 192.168.1.202:8080 weight=1;
+}</pre>
+</li>
+<li>Configure least-connections (sends to the server with fewest active connections):
+        <pre>upstream backend {
+    least_conn;
+    server 192.168.1.201:8080;
+    server 192.168.1.202:8080;
+}</pre>
+</li>
+<li>Configure IP hash (session persistence by client IP):
+        <pre>upstream backend {
+    ip_hash;
+    server 192.168.1.201:8080;
+    server 192.168.1.202:8080;
+}</pre>
+</li>
+<li>Test each method by restarting Nginx and sending multiple requests:
+        <pre>sudo nginx -t &amp;&amp; sudo systemctl restart nginx
+for i in $(seq 1 12); do curl -s http://localhost; done</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>With weighted mode, the higher-weight server receives proportionally more requests. With least-connections, busy servers receive fewer new requests. With IP hash, the same client always reaches the same backend.</p>
+</div>
+<!-- Lab 99 -->
+<div class="lab-separator"></div>
+<h2 id="lab-99">Lab 99: Installing and Configuring HAProxy as a Load Balancer</h2>
+<p><strong>Objective:</strong> Set up HAProxy for HTTP load balancing with health checks and a statistics dashboard.</p>
+<p><strong>Environment:</strong> A Linux VM for HAProxy and two or more backend VMs.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Install HAProxy:
+        <pre>sudo dnf install haproxy    # RHEL/CentOS
+sudo apt install haproxy    # Ubuntu</pre>
+</li>
+<li>Edit the HAProxy configuration:
+        <pre>sudo nano /etc/haproxy/haproxy.cfg</pre>
+        Add the following (after the global/defaults sections):
+        <pre>frontend http_front
+    bind *:80
+    default_backend http_back
+
+backend http_back
+    balance roundrobin
+    server web1 192.168.1.201:8080 check
+    server web2 192.168.1.202:8080 check
+
+listen stats
+    bind *:8404
+    stats enable
+    stats uri /stats
+    stats refresh 10s</pre>
+</li>
+<li>Start HAProxy:
+        <pre>sudo systemctl enable --now haproxy</pre>
+</li>
+<li>Test load balancing:
+        <pre>for i in $(seq 1 6); do curl -s http://localhost; done</pre>
+</li>
+<li>Access the statistics dashboard in a browser or with curl:
+        <pre>curl http://localhost:8404/stats</pre>
+</li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>HAProxy distributes traffic across backends in round-robin fashion. Health checks automatically remove failed backends from the rotation. The statistics page on port 8404 shows server statuses, connection counts, and health check results.</p>
+</div>
+<!-- Lab 100 -->
+<div class="lab-separator"></div>
+<h2 id="lab-100">Lab 100: HAProxy with Session Persistence and SSL Termination</h2>
+<p><strong>Objective:</strong> Configure cookie-based sticky sessions and HTTPS termination on HAProxy.</p>
+<p><strong>Environment:</strong> HAProxy VM with backends (from Lab 99) and OpenSSL for certificate generation.</p>
+<h4>Procedure</h4>
+<ol>
+<li>Generate a certificate and create a combined PEM file for HAProxy:
+        <pre>sudo mkdir -p /etc/haproxy/ssl
+sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout /etc/haproxy/ssl/server.key \
+  -out /etc/haproxy/ssl/server.crt \
+  -subj "/CN=lab.example.com"
+sudo cat /etc/haproxy/ssl/server.crt /etc/haproxy/ssl/server.key &gt; /etc/haproxy/ssl/combined.pem</pre>
+</li>
+<li>Update the HAProxy configuration for SSL and sticky sessions:
+        <pre>frontend http_front
+    bind *:80
+    redirect scheme https if !{ ssl_fc }
+
+frontend https_front
+    bind *:443 ssl crt /etc/haproxy/ssl/combined.pem
+    default_backend http_back
+
+backend http_back
+    balance roundrobin
+    cookie SERVERID insert indirect nocache
+    server web1 192.168.1.201:8080 check cookie web1
+    server web2 192.168.1.202:8080 check cookie web2</pre>
+</li>
+<li>Restart and test:
+        <pre>sudo systemctl restart haproxy</pre>
+</li>
+<li>Test HTTP-to-HTTPS redirect:
+        <pre>curl -v http://localhost 2&gt;&amp;1 | grep "Location"</pre>
+</li>
+<li>Test HTTPS and session persistence:
+        <pre>curl -k -c cookies.txt https://localhost
+curl -k -b cookies.txt https://localhost
+curl -k -b cookies.txt https://localhost</pre>
+        All three requests with the cookie should go to the same backend.
+    </li>
+</ol>
+<div class="expected-outcome">
+<h4>Expected Outcome</h4>
+<p>HTTP requests are automatically redirected to HTTPS. HTTPS connections are terminated at HAProxy with the self-signed certificate. The <code>SERVERID</code> cookie ensures session persistence — repeated requests with the same cookie always reach the same backend server.</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- CONCLUSION -->
+<!-- ============================================================ -->
+<h1 id="conclusion">Conclusion</h1>
+<p>Congratulations on completing all 100 networking lab exercises. By working through these labs, you have built a strong practical foundation in the Linux networking skills required for the LFCS exam and for real-world system administration. You have practiced:</p>
+<ul>
+<li>IPv4 and IPv6 address configuration using multiple tools and methods</li>
+<li>Hostname resolution, DNS client configuration, and split DNS</li>
+<li>NTP time synchronization with chronyd and systemd-timesyncd</li>
+<li>Network monitoring and troubleshooting with essential diagnostic tools</li>
+<li>OpenSSH server hardening, key management, and tunneling</li>
+<li>Packet filtering with iptables, nftables, and firewalld</li>
+<li>Port redirection and Network Address Translation (NAT)</li>
+<li>Static routing across multi-segment networks</li>
+<li>Network bridges and interface bonding for Layer 2 connectivity and redundancy</li>
+<li>Reverse proxies and load balancers with Nginx, Apache, and HAProxy</li>
+</ul>
+<h2>Next Steps</h2>
+<ol>
+<li><strong>Review and Repeat:</strong> Return to any lab that felt challenging. Repetition builds confidence and speed.</li>
+<li><strong>Combine Labs:</strong> Build complex scenarios that combine multiple topics — for example, a NAT gateway with firewall rules, NTP synchronization, and SSH hardening all on one VM.</li>
+<li><strong>Practice Under Time Pressure:</strong> The LFCS exam is performance-based and timed. Practice completing lab tasks within strict time limits.</li>
+<li><strong>Study the Other LFCS Domains:</strong> The networking domain is one part of the LFCS exam. Ensure you also practice essential commands, file management, user/group administration, storage management, and service configuration.</li>
+</ol>
+<h2>Recommended Resources</h2>
+<table>
+<tr>
+<th>Resource</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>Linux Foundation LFCS Exam Page</td>
+<td>Official exam objectives, registration, and preparation guidance</td>
+</tr>
+<tr>
+<td>RHEL 9 Networking Guide</td>
+<td>Red Hat's official documentation for networking configuration</td>
+</tr>
+<tr>
+<td>Ubuntu Server Guide — Networking</td>
+<td>Canonical's official networking documentation for Ubuntu Server</td>
+</tr>
+<tr>
+<td><code>man</code> pages</td>
+<td>Built-in documentation for every command used in these labs (e.g., <code>man nmcli</code>, <code>man ip</code>)</td>
+</tr>
+<tr>
+<td>Nginx Documentation</td>
+<td>Official reference for Nginx configuration directives</td>
+</tr>
+<tr>
+<td>HAProxy Documentation</td>
+<td>Official reference for HAProxy configuration</td>
+</tr>
+</table>
+<div class="callout callout-tip">
+<p class="callout-label">Final Tip</p>
+<p>The best preparation is hands-on practice. Keep your lab VMs ready, experiment beyond the written procedures, and challenge yourself to solve problems without referring to the instructions. The skills you build through deliberate practice will serve you well — not just on the exam, but throughout your career as a Linux system administrator.</p>
+</div>
+
+  </div>
+</main>
+<button id="btt" onclick="document.getElementById('main').scrollTo(0,0)">↑</button>
+<script>
+const LABS = [{"id": "lab-1", "num": 1, "title": "Lab 1: Displaying Current IPv4 Configuration"}, {"id": "lab-2", "num": 2, "title": "Lab 2: Configuring a Static IPv4 Address with nmcli"}, {"id": "lab-3", "num": 3, "title": "Lab 3: Configuring a Static IPv4 Address with Netplan (Ubuntu)"}, {"id": "lab-4", "num": 4, "title": "Lab 4: Configuring DHCP Client"}, {"id": "lab-5", "num": 5, "title": "Lab 5: Adding Multiple IPv4 Addresses to a Single Interface"}, {"id": "lab-6", "num": 6, "title": "Lab 6: Configuring Custom Subnet Masks"}, {"id": "lab-7", "num": 7, "title": "Lab 7: Disabling and Enabling Network Interfaces"}, {"id": "lab-8", "num": 8, "title": "Lab 8: Configuring Persistent Static Routes for IPv4"}, {"id": "lab-9", "num": 9, "title": "Lab 9: Viewing IPv6 Addresses and Understanding Address Types"}, {"id": "lab-10", "num": 10, "title": "Lab 10: Configuring a Static Global IPv6 Address"}, {"id": "lab-11", "num": 11, "title": "Lab 11: Configuring IPv6 with SLAAC"}, {"id": "lab-12", "num": 12, "title": "Lab 12: Setting Up a Dual-Stack (IPv4 + IPv6) Interface"}, {"id": "lab-13", "num": 13, "title": "Lab 13: Disabling IPv6 on a Specific Interface"}, {"id": "lab-14", "num": 14, "title": "Lab 14: Testing IPv6 Connectivity with ping6 and traceroute6"}, {"id": "lab-15", "num": 15, "title": "Lab 15: Configuring IPv6 Static Routes"}, {"id": "lab-16", "num": 16, "title": "Lab 16: Setting and Verifying the System Hostname"}, {"id": "lab-17", "num": 17, "title": "Lab 17: Configuring Local Name Resolution with /etc/hosts"}, {"id": "lab-18", "num": 18, "title": "Lab 18: Configuring DNS Client Settings with /etc/resolv.conf"}, {"id": "lab-19", "num": 19, "title": "Lab 19: Understanding and Configuring NSS with /etc/nsswitch.conf"}, {"id": "lab-20", "num": 20, "title": "Lab 20: Using dig, nslookup, and host for DNS Troubleshooting"}, {"id": "lab-21", "num": 21, "title": "Lab 21: Configuring systemd-resolved for DNS"}, {"id": "lab-22", "num": 22, "title": "Lab 22: Implementing Split DNS with Multiple Network Connections"}, {"id": "lab-23", "num": 23, "title": "Lab 23: Checking Current Time and Timezone Settings"}, {"id": "lab-24", "num": 24, "title": "Lab 24: Setting the System Timezone"}, {"id": "lab-25", "num": 25, "title": "Lab 25: Configuring Time Synchronization with chronyd"}, {"id": "lab-26", "num": 26, "title": "Lab 26: Configuring Time Synchronization with systemd-timesyncd"}, {"id": "lab-27", "num": 27, "title": "Lab 27: Setting Up a Local NTP Server with chronyd"}, {"id": "lab-28", "num": 28, "title": "Lab 28: Manually Setting Time and Disabling NTP"}, {"id": "lab-29", "num": 29, "title": "Lab 29: Basic Connectivity Testing with ping"}, {"id": "lab-30", "num": 30, "title": "Lab 30: Tracing Network Paths with traceroute and tracepath"}, {"id": "lab-31", "num": 31, "title": "Lab 31: Inspecting Active Connections with ss"}, {"id": "lab-32", "num": 32, "title": "Lab 32: Capturing Network Traffic with tcpdump"}, {"id": "lab-33", "num": 33, "title": "Lab 33: Network Scanning with nmap"}, {"id": "lab-34", "num": 34, "title": "Lab 34: Monitoring Network Interfaces with ip and ethtool"}, {"id": "lab-35", "num": 35, "title": "Lab 35: Bandwidth Testing with iperf3"}, {"id": "lab-36", "num": 36, "title": "Lab 36: Continuous Network Diagnostics with mtr"}, {"id": "lab-37", "num": 37, "title": "Lab 37: Monitoring DNS Resolution Performance"}, {"id": "lab-38", "num": 38, "title": "Lab 38: Analyzing Network Connections with netstat"}, {"id": "lab-39", "num": 39, "title": "Lab 39: Monitoring Real-Time Network Traffic with nload and iftop"}, {"id": "lab-40", "num": 40, "title": "Lab 40: Troubleshooting a Complete Network Connectivity Issue"}, {"id": "lab-41", "num": 41, "title": "Lab 41: Installing and Starting the OpenSSH Server"}, {"id": "lab-42", "num": 42, "title": "Lab 42: Connecting with the SSH Client"}, {"id": "lab-43", "num": 43, "title": "Lab 43: Generating SSH Key Pairs"}, {"id": "lab-44", "num": 44, "title": "Lab 44: Configuring Key-Based Authentication"}, {"id": "lab-45", "num": 45, "title": "Lab 45: Hardening the SSH Server Configuration"}, {"id": "lab-46", "num": 46, "title": "Lab 46: Changing the SSH Listening Port"}, {"id": "lab-47", "num": 47, "title": "Lab 47: Using SSH Config File for Connection Profiles"}, {"id": "lab-48", "num": 48, "title": "Lab 48: Transferring Files with SCP"}, {"id": "lab-49", "num": 49, "title": "Lab 49: Using SFTP for Interactive File Transfer"}, {"id": "lab-50", "num": 50, "title": "Lab 50: Setting Up SSH Local Port Forwarding (Tunnel)"}, {"id": "lab-51", "num": 51, "title": "Lab 51: Setting Up SSH Remote Port Forwarding"}, {"id": "lab-52", "num": 52, "title": "Lab 52: Using SSH Agent for Key Management"}, {"id": "lab-53", "num": 53, "title": "Lab 53: Viewing Current Firewall Rules with iptables"}, {"id": "lab-54", "num": 54, "title": "Lab 54: Allowing and Blocking Ports with iptables"}, {"id": "lab-55", "num": 55, "title": "Lab 55: Saving and Restoring iptables Rules"}, {"id": "lab-56", "num": 56, "title": "Lab 56: Blocking Specific IP Addresses with iptables"}, {"id": "lab-57", "num": 57, "title": "Lab 57: Rate Limiting Connections with iptables"}, {"id": "lab-58", "num": 58, "title": "Lab 58: Managing Firewall with firewalld"}, {"id": "lab-59", "num": 59, "title": "Lab 59: Creating Custom firewalld Zones"}, {"id": "lab-60", "num": 60, "title": "Lab 60: Introduction to nftables"}, {"id": "lab-61", "num": 61, "title": "Lab 61: Persisting nftables Rules"}, {"id": "lab-62", "num": 62, "title": "Lab 62: Logging and Monitoring Dropped Packets"}, {"id": "lab-63", "num": 63, "title": "Lab 63: Port Redirection with iptables REDIRECT"}, {"id": "lab-64", "num": 64, "title": "Lab 64: Port Forwarding with iptables DNAT"}, {"id": "lab-65", "num": 65, "title": "Lab 65: Port Forwarding with firewalld"}, {"id": "lab-66", "num": 66, "title": "Lab 66: Port Forwarding with nftables"}, {"id": "lab-67", "num": 67, "title": "Lab 67: Port Redirection with socat"}, {"id": "lab-68", "num": 68, "title": "Lab 68: Testing and Verifying Port Redirections"}, {"id": "lab-69", "num": 69, "title": "Lab 69: Understanding NAT Concepts"}, {"id": "lab-70", "num": 70, "title": "Lab 70: Configuring Source NAT (MASQUERADE) with iptables"}, {"id": "lab-71", "num": 71, "title": "Lab 71: Configuring SNAT with a Static IP"}, {"id": "lab-72", "num": 72, "title": "Lab 72: Configuring NAT with nftables"}, {"id": "lab-73", "num": 73, "title": "Lab 73: Configuring NAT with firewalld"}, {"id": "lab-74", "num": 74, "title": "Lab 74: NAT Troubleshooting and Connection Tracking"}, {"id": "lab-75", "num": 75, "title": "Lab 75: Viewing and Understanding the Routing Table"}, {"id": "lab-76", "num": 76, "title": "Lab 76: Adding and Deleting Static Routes Temporarily"}, {"id": "lab-77", "num": 77, "title": "Lab 77: Configuring Persistent Static Routes"}, {"id": "lab-78", "num": 78, "title": "Lab 78: Building a Multi-Segment Routed Lab Network"}, {"id": "lab-79", "num": 79, "title": "Lab 79: Configuring a Default Gateway"}, {"id": "lab-80", "num": 80, "title": "Lab 80: Troubleshooting Routing Issues"}, {"id": "lab-81", "num": 81, "title": "Lab 81: Creating a Network Bridge with nmcli"}, {"id": "lab-82", "num": 82, "title": "Lab 82: Creating a Bridge with the ip and brctl Commands"}, {"id": "lab-83", "num": 83, "title": "Lab 83: Bridging Two Network Interfaces"}, {"id": "lab-84", "num": 84, "title": "Lab 84: Configuring STP on a Linux Bridge"}, {"id": "lab-85", "num": 85, "title": "Lab 85: Creating a Bridge for KVM/QEMU Virtual Machines"}, {"id": "lab-86", "num": 86, "title": "Lab 86: Persistent Bridge Configuration with Netplan (Ubuntu)"}, {"id": "lab-87", "num": 87, "title": "Lab 87: Creating a Bond Interface with nmcli (Mode 1 \u2014 Active-Backup)"}, {"id": "lab-88", "num": 88, "title": "Lab 88: Configuring Bond Mode 0 (Balance Round-Robin)"}, {"id": "lab-89", "num": 89, "title": "Lab 89: Configuring Bond Mode 4 (802.3ad / LACP)"}, {"id": "lab-90", "num": 90, "title": "Lab 90: Testing Bond Failover"}, {"id": "lab-91", "num": 91, "title": "Lab 91: Bonding with VLAN Tagging"}, {"id": "lab-92", "num": 92, "title": "Lab 92: Installing and Configuring Nginx as a Basic Reverse Proxy"}, {"id": "lab-93", "num": 93, "title": "Lab 93: Configuring Nginx Reverse Proxy with Multiple Backends (Path-Based)"}, {"id": "lab-94", "num": 94, "title": "Lab 94: Setting Up TLS Termination with Nginx"}, {"id": "lab-95", "num": 95, "title": "Lab 95: Configuring Apache as a Reverse Proxy"}, {"id": "lab-96", "num": 96, "title": "Lab 96: Adding Access Control to a Reverse Proxy"}, {"id": "lab-97", "num": 97, "title": "Lab 97: Configuring Nginx as a Round-Robin HTTP Load Balancer"}, {"id": "lab-98", "num": 98, "title": "Lab 98: Configuring Nginx Load Balancer with Weighted and Least-Connections Methods"}, {"id": "lab-99", "num": 99, "title": "Lab 99: Installing and Configuring HAProxy as a Load Balancer"}, {"id": "lab-100", "num": 100, "title": "Lab 100: HAProxy with Session Persistence and SSL Termination"}];
+const completed = new Set(JSON.parse(localStorage.getItem("lfcs_done")||"[]"));
+
+document.addEventListener("DOMContentLoaded", function() {
+  addCopyButtons();
+  addCheckboxes();
+  restoreCompleted();
+  updateProgress();
+  initScrollSpy();
+  var first = document.querySelector(".section-toggle");
+  if (first) first.setAttribute("aria-expanded","true");
+});
+
+function toggleSection(btn) {
+  var exp = btn.getAttribute("aria-expanded") === "true";
+  btn.setAttribute("aria-expanded", exp ? "false" : "true");
+}
+
+function filterLabs(q) {
+  q = q.toLowerCase();
+  document.querySelectorAll(".nav-section").forEach(function(sec) {
+    var anyVisible = false;
+    sec.querySelectorAll(".lab-link").forEach(function(link) {
+      var show = !q || link.textContent.toLowerCase().indexOf(q) >= 0;
+      link.style.display = show ? "" : "none";
+      if (show) anyVisible = true;
+    });
+    sec.style.display = anyVisible || !q ? "" : "none";
+    if (q && anyVisible) sec.querySelector(".section-toggle").setAttribute("aria-expanded","true");
+  });
+}
+
+function addCopyButtons() {
+  document.querySelectorAll("#content-wrap pre").forEach(function(pre) {
+    var btn = document.createElement("button");
+    btn.className = "copy-btn"; btn.textContent = "Copy";
+    btn.onclick = function() {
+      var text = pre.textContent.replace(/^Copy\n?/,"");
+      navigator.clipboard.writeText(text).then(function() {
+        btn.textContent = "Copied!"; btn.classList.add("copied");
+        setTimeout(function() { btn.textContent = "Copy"; btn.classList.remove("copied"); }, 1500);
+      });
+    };
+    pre.style.position = "relative";
+    pre.prepend(btn);
+  });
+}
+
+function addCheckboxes() {
+  LABS.forEach(function(lab) {
+    var h2 = document.getElementById(lab.id);
+    if (!h2) return;
+    var wrap = document.createElement("span");
+    wrap.className = "cb-wrap";
+    var cb = document.createElement("input");
+    cb.type = "checkbox"; cb.className = "lab-check"; cb.title = "Mark completed";
+    cb.dataset.lab = lab.num;
+    cb.onchange = function() { toggleComplete(lab.num, cb.checked); };
+    wrap.appendChild(cb);
+    h2.appendChild(wrap);
+  });
+}
+
+function toggleComplete(num, done) {
+  if (done) completed.add(num); else completed.delete(num);
+  localStorage.setItem("lfcs_done", JSON.stringify(Array.from(completed)));
+  updateProgress();
+  var link = document.querySelector('.lab-link[data-lab="'+num+'"]');
+  if (link) { if(done) link.classList.add("completed"); else link.classList.remove("completed"); }
+}
+
+function restoreCompleted() {
+  completed.forEach(function(num) {
+    var cb = document.querySelector('.lab-check[data-lab="'+num+'"]');
+    if (cb) cb.checked = true;
+    var link = document.querySelector('.lab-link[data-lab="'+num+'"]');
+    if (link) link.classList.add("completed");
+  });
+}
+
+function updateProgress() {
+  var n = completed.size;
+  document.getElementById("progress-text").textContent = n + " / 100 labs completed";
+  document.getElementById("progress-bar").style.width = n + "%";
+}
+
+function initScrollSpy() {
+  var main = document.getElementById("main");
+  var ids = LABS.map(function(l){return l.id;});
+  var ticking = false;
+  main.addEventListener("scroll", function() {
+    if (!ticking) { ticking = true; requestAnimationFrame(function() { spy(); ticking = false; }); }
+  });
+  function spy() {
+    document.getElementById("btt").style.display = main.scrollTop > 600 ? "block" : "none";
+    var activeId = null;
+    for (var i=0; i<ids.length; i++) {
+      var el = document.getElementById(ids[i]);
+      if (el) { var rect = el.getBoundingClientRect(); if (rect.top <= 120) activeId = ids[i]; }
+    }
+    document.querySelectorAll(".lab-link").forEach(function(a){a.classList.remove("active");});
+    if (activeId) {
+      var link = document.querySelector('.lab-link[href="#'+activeId+'"]');
+      if (link) {
+        link.classList.add("active");
+        var sec = link.closest(".nav-section");
+        if (sec) sec.querySelector(".section-toggle").setAttribute("aria-expanded","true");
+        link.scrollIntoView({block:"nearest",behavior:"smooth"});
+      }
+    }
+  }
+}
+
+document.querySelectorAll("#sidebar a").forEach(function(a) {
+  a.addEventListener("click", function() {
+    if (window.innerWidth <= 768) {
+      document.getElementById("sidebar").classList.remove("open");
+      document.getElementById("overlay").classList.remove("show");
+    }
+  });
+});
+</script>
+</body>
+</html>
