@@ -1,0 +1,1 @@
+These are sets of interactive html files that provide lab exercises for practing for the LFCS exam. Some of the labs may not be 100 percent accurate, but it's something to learn from and build troubleshooting skills
