@@ -1,0 +1,1916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="color-scheme" content="dark" />
+<title>LFCS Storage Domain — 100 Lab Exercises</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@1.8.0/dist/umd/lucide.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        bg: { DEFAULT: '#1a1b26', light: '#24283b', lighter: '#414868' },
+        accent: '#7aa2f7',
+        green: '#9ece6a',
+        red: '#f7768e',
+        orange: '#e0af68',
+        muted: '#565f89',
+        text: { DEFAULT: '#c0caf5', dim: '#a9b1d6', bright: '#e0e6f5' }
+      }
+    }
+  }
+};
+</script>
+<style>
+:root {
+  --bg: #1a1b26;
+  --bg-light: #24283b;
+  --bg-lighter: #414868;
+  --accent: #7aa2f7;
+  --green: #9ece6a;
+  --red: #f7768e;
+  --orange: #e0af68;
+  --muted: #565f89;
+  --text: #c0caf5;
+  --text-dim: #a9b1d6;
+  --text-bright: #e0e6f5;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+code, pre, .mono { font-family: 'JetBrains Mono', monospace; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--bg-lighter); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+html { scroll-behavior: smooth; }
+#sidebar { position: fixed; top: 0; left: 0; width: 280px; height: 100vh; background: var(--bg-light); border-right: 1px solid var(--bg-lighter); display: flex; flex-direction: column; z-index: 40; transition: transform 0.3s ease; }
+#sidebar-header { padding: 16px; border-bottom: 1px solid var(--bg-lighter); flex-shrink: 0; }
+#sidebar-nav { flex: 1; overflow-y: auto; padding: 8px 0; }
+#main-content { margin-left: 280px; min-height: 100vh; }
+#sticky-header { position: sticky; top: 0; z-index: 30; background: rgba(26,27,38,0.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--bg-lighter); padding: 10px 24px; display: flex; align-items: center; justify-content: space-between; }
+.section-btn { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 8px 16px; cursor: pointer; border: none; background: none; color: var(--accent); font-weight: 600; font-size: 13px; text-align: left; transition: background 0.15s; }
+.section-btn:hover { background: rgba(122,162,247,0.08); }
+.section-btn .chevron { transition: transform 0.2s; }
+.section-btn.open .chevron { transform: rotate(90deg); }
+.lab-link { display: block; padding: 4px 16px 4px 28px; font-size: 12.5px; color: var(--text-dim); text-decoration: none; cursor: pointer; transition: all 0.15s; border-left: 2px solid transparent; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lab-link:hover { color: var(--accent); background: rgba(122,162,247,0.05); }
+.lab-link.active { color: var(--accent); background: rgba(122,162,247,0.1); border-left-color: var(--accent); font-weight: 500; }
+.lab-section { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+.lab-section.open { max-height: 4000px; }
+.lab-card { background: var(--bg-light); border: 1px solid var(--bg-lighter); border-radius: 8px; padding: 24px; margin-bottom: 20px; }
+.lab-card h3 { color: var(--accent); font-size: 1.15rem; margin-bottom: 8px; }
+.lab-card .objective { color: var(--text-dim); margin-bottom: 12px; font-size: 0.95rem; }
+.task-list { list-style: none; counter-reset: task; padding: 0; }
+.task-list li { counter-increment: task; position: relative; padding: 6px 0 6px 32px; font-size: 0.9rem; }
+.task-list li::before { content: counter(task); position: absolute; left: 0; top: 6px; width: 22px; height: 22px; background: var(--bg-lighter); color: var(--accent); border-radius: 50%; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; }
+.task-list li code { background: var(--bg-lighter); padding: 1px 6px; border-radius: 4px; font-size: 0.82rem; color: var(--green); }
+.verification { background: rgba(122,162,247,0.06); border: 1px solid rgba(122,162,247,0.15); border-radius: 6px; padding: 12px 16px; margin-top: 12px; font-size: 0.88rem; }
+.verification::before { content: '✓ Verification'; display: block; font-weight: 600; color: var(--accent); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.callout { border-radius: 6px; padding: 12px 16px; margin-top: 12px; font-size: 0.88rem; }
+.callout.tip { background: rgba(158,206,106,0.08); border-left: 3px solid var(--green); }
+.callout.tip::before { content: '💡 Tip'; display: block; font-weight: 600; color: var(--green); font-size: 0.8rem; margin-bottom: 4px; }
+.callout.warning { background: rgba(247,118,142,0.08); border-left: 3px solid var(--red); }
+.callout.warning::before { content: '⚠ Warning'; display: block; font-weight: 600; color: var(--red); font-size: 0.8rem; margin-bottom: 4px; }
+.callout.note { background: rgba(86,95,137,0.15); border-left: 3px solid var(--muted); }
+.callout.note::before { content: '📝 Note'; display: block; font-weight: 600; color: var(--muted); font-size: 0.8rem; margin-bottom: 4px; }
+.callout.important { background: rgba(224,175,104,0.08); border-left: 3px solid var(--orange); }
+.callout.important::before { content: '🔶 Important'; display: block; font-weight: 600; color: var(--orange); font-size: 0.8rem; margin-bottom: 4px; }
+.ref-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.ref-table th { background: var(--bg-lighter); color: var(--accent); padding: 8px 12px; text-align: left; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; }
+.ref-table td { padding: 8px 12px; border-bottom: 1px solid var(--bg-lighter); }
+.ref-table td code { background: var(--bg); padding: 1px 5px; border-radius: 3px; font-size: 0.8rem; color: var(--green); }
+.ref-table tr:hover td { background: rgba(122,162,247,0.04); }
+#back-to-top { position: fixed; bottom: 24px; right: 24px; width: 42px; height: 42px; background: var(--accent); color: var(--bg); border-radius: 50%; border: none; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 50; box-shadow: 0 4px 12px rgba(122,162,247,0.3); transition: opacity 0.2s, transform 0.2s; }
+#back-to-top:hover { transform: scale(1.1); }
+#hamburger { display: none; }
+@media (max-width: 767px) {
+  #sidebar { transform: translateX(-100%); width: 280px; }
+  #sidebar.open { transform: translateX(0); }
+  #main-content { margin-left: 0; }
+  #hamburger { display: flex; }
+  #sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 35; }
+  #sidebar-overlay.open { display: block; }
+}
+.section-title-bar { background: var(--bg-light); border: 1px solid var(--bg-lighter); border-radius: 8px; padding: 16px 24px; margin-bottom: 16px; margin-top: 32px; }
+.section-title-bar h2 { color: var(--accent); font-size: 1.35rem; margin: 0; }
+.section-title-bar p { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
+</style>
+</head>
+<body data-id="0">
+<app-icon data-id="1" hidden data-icon="hard-drive" data-palette="Dark"></app-icon>
+<div data-id="2" id="sidebar-overlay"></div>
+<aside data-id="3" id="sidebar">
+  <div data-id="4" id="sidebar-header">
+    <div data-id="5" class="flex items-center gap-2 mb-3">
+      <i data-id="6" data-lucide="hard-drive" class="w-5 h-5 text-accent"></i>
+      <span data-id="7" class="font-bold text-accent text-sm">LFCS Storage Labs</span>
+    </div>
+    <div data-id="8" class="relative">
+      <i data-id="9" data-lucide="search" class="w-4 h-4 absolute left-2.5 top-2.5 text-muted"></i>
+      <input data-id="10" id="search-input-a1b2" type="text" placeholder="Filter labs..." class="w-full bg-bg border border-bg-lighter rounded px-3 py-2 pl-8 text-xs text-text focus:outline-none focus:border-accent" />
+    </div>
+  </div>
+  <nav data-id="11" id="sidebar-nav">
+    <div data-id="12" class="sidebar-section" data-section="s1">
+      <button data-id="13" class="section-btn open" data-toggle="s1"><span data-id="14">§1 LVM Storage (20)</span><i data-id="15" data-lucide="chevron-right" class="w-4 h-4 chevron"></i></button>
+      <div data-id="16" class="lab-section open" id="sec-s1"></div>
+    </div>
+    <div data-id="17" class="sidebar-section" data-section="s2">
+      <button data-id="18" class="section-btn" data-toggle="s2"><span data-id="19">§2 Virtual File System (15)</span><i data-id="20" data-lucide="chevron-right" class="w-4 h-4 chevron"></i></button>
+      <div data-id="21" class="lab-section" id="sec-s2"></div>
+    </div>
+    <div data-id="22" class="sidebar-section" data-section="s3">
+      <button data-id="23" class="section-btn" data-toggle="s3"><span data-id="24">§3 Filesystems (20)</span><i data-id="25" data-lucide="chevron-right" class="w-4 h-4 chevron"></i></button>
+      <div data-id="26" class="lab-section" id="sec-s3"></div>
+    </div>
+    <div data-id="27" class="sidebar-section" data-section="s4">
+      <button data-id="28" class="section-btn" data-toggle="s4"><span data-id="29">§4 Remote & Network (17)</span><i data-id="30" data-lucide="chevron-right" class="w-4 h-4 chevron"></i></button>
+      <div data-id="31" class="lab-section" id="sec-s4"></div>
+    </div>
+    <div data-id="32" class="sidebar-section" data-section="s5">
+      <button data-id="33" class="section-btn" data-toggle="s5"><span data-id="34">§5 Swap Space (10)</span><i data-id="35" data-lucide="chevron-right" class="w-4 h-4 chevron"></i></button>
+      <div data-id="36" class="lab-section" id="sec-s5"></div>
+    </div>
+    <div data-id="37" class="sidebar-section" data-section="s6">
+      <button data-id="38" class="section-btn" data-toggle="s6"><span data-id="39">§6 Automounters (10)</span><i data-id="40" data-lucide="chevron-right" class="w-4 h-4 chevron"></i></button>
+      <div data-id="41" class="lab-section" id="sec-s6"></div>
+    </div>
+    <div data-id="42" class="sidebar-section" data-section="s7">
+      <button data-id="43" class="section-btn" data-toggle="s7"><span data-id="44">§7 Performance (8)</span><i data-id="45" data-lucide="chevron-right" class="w-4 h-4 chevron"></i></button>
+      <div data-id="46" class="lab-section" id="sec-s7"></div>
+    </div>
+    <div data-id="47" class="sidebar-section" data-section="appendices">
+      <button data-id="48" class="section-btn" data-toggle="appendices"><span data-id="49">Appendices (3)</span><i data-id="50" data-lucide="chevron-right" class="w-4 h-4 chevron"></i></button>
+      <div data-id="51" class="lab-section" id="sec-appendices">
+        <a data-id="52" class="lab-link" data-target="appendix-a">A: Command Reference</a>
+        <a data-id="53" class="lab-link" data-target="appendix-b">B: VM Setup Guide</a>
+        <a data-id="54" class="lab-link" data-target="appendix-c">C: Exam Day Tips</a>
+      </div>
+    </div>
+  </nav>
+</aside>
+
+<div data-id="55" id="main-content">
+  <div data-id="56" id="sticky-header">
+    <div data-id="57" class="flex items-center gap-3">
+      <button data-id="58" id="hamburger" class="p-2 rounded hover:bg-bg-lighter text-muted">
+        <i data-id="59" data-lucide="menu" class="w-5 h-5"></i>
+      </button>
+      <span data-id="60" id="current-section-label" class="text-sm font-semibold text-accent mono">LFCS Storage Labs</span>
+    </div>
+    <span data-id="61" id="progress-label" class="text-xs text-muted mono">Lab 0 of 100</span>
+  </div>
+
+  <div data-id="62" class="max-w-4xl mx-auto px-4 md:px-8 py-8" id="content-area">
+
+    <!-- TITLE BLOCK -->
+    <div data-id="63" id="title-block" class="text-center mb-10">
+      <h1 data-id="64" class="text-2xl md:text-3xl font-bold text-accent mb-2" id="title-main-x1z2">LFCS Storage Domain — 100 Hands-On Lab Exercises</h1>
+      <p data-id="65" class="text-text-dim text-sm md:text-base" id="subtitle-q3r4">Comprehensive Virtual Machine Practice Guide for the LFCS Storage Competency (20% of Exam)</p>
+      <div data-id="66" class="callout important mt-6 text-left">All labs designed for a disposable VM with 4+ virtual disks. Never run these exercises on production systems or any machine with data you care about.</div>
+    </div>
+
+    <!-- INTRODUCTION -->
+    <div data-id="67" id="intro-section" class="lab-card mb-8">
+      <h2 data-id="68" class="text-accent text-xl font-bold mb-3">Introduction</h2>
+      <p data-id="69" class="text-sm text-text-dim mb-4">The Storage domain accounts for <strong data-id="70" class="text-accent">20% of the LFCS exam</strong>. It is divided into 7 sub-topics, each covered by hands-on labs below. You will need a properly configured virtual machine to follow along.</p>
+      <h3 data-id="71" class="text-accent text-sm font-semibold mb-2 uppercase tracking-wider">VM Prerequisites</h3>
+      <div data-id="72" class="overflow-x-auto">
+        <table data-id="73" class="ref-table">
+          <thead data-id="74"><tr data-id="75"><th data-id="76">Component</th><th data-id="77">Requirement</th></tr></thead>
+          <tbody data-id="78">
+            <tr data-id="79"><td data-id="80">Recommended Distro</td><td data-id="81">Ubuntu 22.04/24.04 LTS or Rocky Linux 9</td></tr>
+            <tr data-id="82"><td data-id="83">Virtual Disks</td><td data-id="84">Min 4 additional, 5 GB each (<code data-id="85">/dev/sdb</code> through <code data-id="86">/dev/sde</code>)</td></tr>
+            <tr data-id="87"><td data-id="88">RAM</td><td data-id="89">2 GB min (4 GB recommended)</td></tr>
+            <tr data-id="90"><td data-id="91">CPU</td><td data-id="92">2 vCPUs</td></tr>
+            <tr data-id="93"><td data-id="94">Required Packages</td><td data-id="95"><code data-id="96">lvm2 nfs-common nfs-kernel-server cifs-utils samba autofs sysstat iotop fio blktrace sshfs targetcli-fb open-iscsi gdisk btrfs-progs quota cryptsetup ncdu attr</code></td></tr>
+            <tr data-id="97"><td data-id="98">Hypervisor</td><td data-id="99">VirtualBox, KVM/libvirt, or VMware Workstation</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div data-id="100" class="callout warning mt-4">All exercises involve destructive disk operations. Use disposable VMs only. Snapshot your VM before each lab session.</div>
+    </div>
+
+    <!-- ===== SECTION 1: LVM (Labs 1-20) ===== -->
+    <div data-id="101" class="section-title-bar" id="section-1-header">
+      <h2 data-id="102">Section 1: Configure and Manage LVM Storage</h2>
+      <p data-id="103">Labs 1–20 · Physical Volumes, Volume Groups, Logical Volumes, Snapshots, Thin Provisioning</p>
+    </div>
+
+    <div data-id="104" class="lab-card" id="lab-1">
+      <h3 data-id="105">Lab 1: Identify Block Devices and Partitions</h3>
+      <p data-id="106" class="objective">Use standard Linux tools to enumerate all attached block devices.</p>
+      <ol data-id="107" class="task-list">
+        <li data-id="108">Run <code data-id="109">lsblk</code> and review output columns (NAME, MAJ:MIN, RM, SIZE, RO, TYPE, MOUNTPOINT)</li>
+        <li data-id="110">Run <code data-id="111">blkid</code> to display UUIDs and filesystem types of all partitions</li>
+        <li data-id="112">Run <code data-id="113">fdisk -l</code> to list disk geometry, sector sizes, and partition tables</li>
+        <li data-id="114">Run <code data-id="115">cat /proc/partitions</code> to view kernel-reported partitions</li>
+        <li data-id="116">Compare outputs and confirm all four virtual disks (<code data-id="117">/dev/sdb</code>–<code data-id="118">/dev/sde</code>) are listed</li>
+      </ol>
+      <div data-id="119" class="verification">All four virtual disks appear in every command's output. No partitions exist on new disks.</div>
+      <div data-id="120" class="callout tip"><code data-id="121">lsblk -f</code> adds filesystem and UUID columns — very useful for quick overview.</div>
+    </div>
+
+    <div data-id="122" class="lab-card" id="lab-2">
+      <h3 data-id="123">Lab 2: Create Partitions with fdisk</h3>
+      <p data-id="124" class="objective">Use fdisk to create two 2 GB partitions on /dev/sdb, set type to Linux LVM.</p>
+      <ol data-id="125" class="task-list">
+        <li data-id="126">Run <code data-id="127">fdisk /dev/sdb</code> to enter interactive partition editor</li>
+        <li data-id="128">Create new partition (<code data-id="129">n</code>), primary, partition 1, size <code data-id="130">+2G</code></li>
+        <li data-id="131">Change type (<code data-id="132">t</code>) to <code data-id="133">8e</code> (Linux LVM)</li>
+        <li data-id="134">Repeat for second 2 GB partition (partition 2)</li>
+        <li data-id="135">Write (<code data-id="136">w</code>) and exit</li>
+      </ol>
+      <div data-id="137" class="verification"><code data-id="138">lsblk /dev/sdb</code> shows two 2 GB partitions. <code data-id="139">fdisk -l</code> shows type "Linux LVM".</div>
+    </div>
+
+    <div data-id="140" class="lab-card" id="lab-3">
+      <h3 data-id="141">Lab 3: Create Partitions with gdisk (GPT)</h3>
+      <p data-id="142" class="objective">Use gdisk to create GPT partition table on /dev/sdc with one 3 GB partition type 8e00.</p>
+      <ol data-id="143" class="task-list">
+        <li data-id="144">Run <code data-id="145">gdisk /dev/sdc</code> to open GPT partition editor</li>
+        <li data-id="146">New partition (<code data-id="147">n</code>), accept defaults, size <code data-id="148">+3G</code></li>
+        <li data-id="149">Type code <code data-id="150">8e00</code></li>
+        <li data-id="151">Write (<code data-id="152">w</code>) and confirm</li>
+      </ol>
+      <div data-id="153" class="verification"><code data-id="154">gdisk -l /dev/sdc</code> shows GPT table with 3 GB partition type 8E00. <code data-id="155">lsblk</code> confirms.</div>
+      <div data-id="156" class="callout note"><code data-id="157">fdisk</code> uses MBR, <code data-id="158">gdisk</code> uses GPT. GPT supports disks &gt;2 TB and &gt;4 primary partitions.</div>
+    </div>
+
+    <div data-id="159" class="lab-card" id="lab-4">
+      <h3 data-id="160">Lab 4: Initialize Physical Volumes</h3>
+      <p data-id="161" class="objective">Initialize partitions as LVM Physical Volumes using pvcreate.</p>
+      <ol data-id="162" class="task-list">
+        <li data-id="163">Run <code data-id="164">pvcreate /dev/sdb1 /dev/sdb2 /dev/sdc1</code></li>
+        <li data-id="165">Verify with <code data-id="166">pvs</code></li>
+        <li data-id="167">Inspect details: <code data-id="168">pvdisplay /dev/sdb1</code></li>
+        <li data-id="169">Scan for all PVs: <code data-id="170">pvscan</code></li>
+      </ol>
+      <div data-id="171" class="verification"><code data-id="172">pvs</code> lists all three PVs. <code data-id="173">pvdisplay</code> shows PE size (default 4 MB).</div>
+    </div>
+
+    <div data-id="174" class="lab-card" id="lab-5">
+      <h3 data-id="175">Lab 5: Create a Volume Group</h3>
+      <p data-id="176" class="objective">Create VG "vg_data" from two Physical Volumes.</p>
+      <ol data-id="177" class="task-list">
+        <li data-id="178">Run <code data-id="179">vgcreate vg_data /dev/sdb1 /dev/sdb2</code></li>
+        <li data-id="180">Verify with <code data-id="181">vgs</code></li>
+        <li data-id="182">Inspect details: <code data-id="183">vgdisplay vg_data</code></li>
+      </ol>
+      <div data-id="184" class="verification"><code data-id="185">vgs</code> shows vg_data with 2 PVs and ~4 GB total.</div>
+    </div>
+
+    <div data-id="186" class="lab-card" id="lab-6">
+      <h3 data-id="187">Lab 6: Create Logical Volumes</h3>
+      <p data-id="188" class="objective">Create two LVs within vg_data.</p>
+      <ol data-id="189" class="task-list">
+        <li data-id="190">Run <code data-id="191">lvcreate -n lv_projects -L 1G vg_data</code></li>
+        <li data-id="192">Run <code data-id="193">lvcreate -n lv_backups -L 500M vg_data</code></li>
+        <li data-id="194">Verify with <code data-id="195">lvs</code></li>
+        <li data-id="196">Inspect details: <code data-id="197">lvdisplay</code></li>
+      </ol>
+      <div data-id="198" class="verification"><code data-id="199">lvs</code> shows both LVs with correct sizes.</div>
+    </div>
+
+    <div data-id="200" class="lab-card" id="lab-7">
+      <h3 data-id="201">Lab 7: Create Filesystems on Logical Volumes</h3>
+      <p data-id="202" class="objective">Format LVs with different filesystem types and mount them.</p>
+      <ol data-id="203" class="task-list">
+        <li data-id="204">Run <code data-id="205">mkfs.ext4 /dev/vg_data/lv_projects</code></li>
+        <li data-id="206">Run <code data-id="207">mkfs.xfs /dev/vg_data/lv_backups</code></li>
+        <li data-id="208">Create mount points: <code data-id="209">mkdir -p /mnt/projects /mnt/backups</code></li>
+        <li data-id="210">Mount both: <code data-id="211">mount /dev/vg_data/lv_projects /mnt/projects</code> and <code data-id="212">mount /dev/vg_data/lv_backups /mnt/backups</code></li>
+      </ol>
+      <div data-id="213" class="verification"><code data-id="214">df -Th</code> shows correct filesystem types and sizes.</div>
+    </div>
+
+    <div data-id="215" class="lab-card" id="lab-8">
+      <h3 data-id="216">Lab 8: Extend a Volume Group</h3>
+      <p data-id="217" class="objective">Add new PV to existing VG using vgextend.</p>
+      <ol data-id="218" class="task-list">
+        <li data-id="219">Confirm <code data-id="220">/dev/sdc1</code> is a PV: <code data-id="221">pvs</code></li>
+        <li data-id="222">Run <code data-id="223">vgextend vg_data /dev/sdc1</code></li>
+        <li data-id="224">Verify new size: <code data-id="225">vgs</code></li>
+      </ol>
+      <div data-id="226" class="verification"><code data-id="227">vgs</code> shows 3 PVs and ~7 GB total.</div>
+    </div>
+
+    <div data-id="228" class="lab-card" id="lab-9">
+      <h3 data-id="229">Lab 9: Extend a Logical Volume (ext4)</h3>
+      <p data-id="230" class="objective">Extend LV with ext4 and resize filesystem.</p>
+      <ol data-id="231" class="task-list">
+        <li data-id="232">Run <code data-id="233">lvextend -L +500M /dev/vg_data/lv_projects</code></li>
+        <li data-id="234">Resize filesystem: <code data-id="235">resize2fs /dev/vg_data/lv_projects</code></li>
+      </ol>
+      <div data-id="236" class="verification"><code data-id="237">lvs</code> shows 1.5 GB. <code data-id="238">df -Th</code> reflects new size.</div>
+    </div>
+
+    <div data-id="239" class="lab-card" id="lab-10">
+      <h3 data-id="240">Lab 10: Extend a Logical Volume (XFS)</h3>
+      <p data-id="241" class="objective">Extend LV with XFS and grow filesystem.</p>
+      <ol data-id="242" class="task-list">
+        <li data-id="243">Run <code data-id="244">lvextend -L +300M /dev/vg_data/lv_backups</code></li>
+        <li data-id="245">Grow XFS: <code data-id="246">xfs_growfs /mnt/backups</code> (takes mount point, not device)</li>
+      </ol>
+      <div data-id="247" class="verification"><code data-id="248">df -Th</code> shows 800 MB.</div>
+      <div data-id="249" class="callout note"><code data-id="250">resize2fs</code> takes device path, <code data-id="251">xfs_growfs</code> takes mount point. This is a common exam question.</div>
+    </div>
+
+    <div data-id="252" class="lab-card" id="lab-11">
+      <h3 data-id="253">Lab 11: Extend LV and Filesystem in One Command</h3>
+      <p data-id="254" class="objective">Use the -r flag for combined extend and resize.</p>
+      <ol data-id="255" class="task-list">
+        <li data-id="256">Run <code data-id="257">lvextend -r -L +200M /dev/vg_data/lv_projects</code></li>
+        <li data-id="258">Observe combined output showing both LV extend and filesystem resize</li>
+      </ol>
+      <div data-id="259" class="verification"><code data-id="260">df -Th</code> shows ~1.7 GB.</div>
+      <div data-id="261" class="callout tip">The <code data-id="262">-r</code> (<code data-id="263">--resizefs</code>) flag works with both ext4 and XFS. Always prefer this on the exam for speed.</div>
+    </div>
+
+    <div data-id="264" class="lab-card" id="lab-12">
+      <h3 data-id="265">Lab 12: Reduce a Logical Volume (ext4)</h3>
+      <p data-id="266" class="objective">Shrink ext4 filesystem and LV. Understand that XFS cannot be shrunk.</p>
+      <ol data-id="267" class="task-list">
+        <li data-id="268">Unmount: <code data-id="269">umount /mnt/projects</code></li>
+        <li data-id="270">Force check: <code data-id="271">e2fsck -f /dev/vg_data/lv_projects</code></li>
+        <li data-id="272">Shrink filesystem: <code data-id="273">resize2fs /dev/vg_data/lv_projects 1G</code></li>
+        <li data-id="274">Reduce LV: <code data-id="275">lvreduce -L 1G /dev/vg_data/lv_projects</code></li>
+        <li data-id="276">Remount: <code data-id="277">mount /dev/vg_data/lv_projects /mnt/projects</code></li>
+      </ol>
+      <div data-id="278" class="verification"><code data-id="279">df -Th</code> shows ~1 GB.</div>
+      <div data-id="280" class="callout warning">XFS cannot be shrunk — ever. Always shrink the filesystem BEFORE reducing the LV for ext4, or data loss will occur.</div>
+    </div>
+
+    <div data-id="281" class="lab-card" id="lab-13">
+      <h3 data-id="282">Lab 13: Create LV Using Percentage of Free Space</h3>
+      <p data-id="283" class="objective">Use percentage-based allocation with lowercase -l flag.</p>
+      <ol data-id="284" class="task-list">
+        <li data-id="285">Check free space: <code data-id="286">vgs</code></li>
+        <li data-id="287">Run <code data-id="288">lvcreate -n lv_logs -l 50%FREE vg_data</code></li>
+        <li data-id="289">Format: <code data-id="290">mkfs.ext4 /dev/vg_data/lv_logs</code></li>
+        <li data-id="291">Mount: <code data-id="292">mount /dev/vg_data/lv_logs /mnt/logs</code></li>
+      </ol>
+      <div data-id="293" class="verification"><code data-id="294">lvs</code> shows ~half the previously free space.</div>
+      <div data-id="295" class="callout tip">Other options: <code data-id="296">100%FREE</code>, <code data-id="297">50%VG</code>, <code data-id="298">100%PVS</code>. Note lowercase <code data-id="299">-l</code> for extents/percentages vs uppercase <code data-id="300">-L</code> for absolute sizes.</div>
+    </div>
+
+    <div data-id="301" class="lab-card" id="lab-14">
+      <h3 data-id="302">Lab 14: Remove a Logical Volume</h3>
+      <p data-id="303" class="objective">Safely remove an LV following proper procedure.</p>
+      <ol data-id="304" class="task-list">
+        <li data-id="305">Unmount: <code data-id="306">umount /mnt/logs</code></li>
+        <li data-id="307">Remove: <code data-id="308">lvremove /dev/vg_data/lv_logs</code>, confirm with <code data-id="309">y</code></li>
+      </ol>
+      <div data-id="310" class="verification"><code data-id="311">lvs</code> no longer shows lv_logs. <code data-id="312">vgs</code> shows increased free space.</div>
+    </div>
+
+    <div data-id="313" class="lab-card" id="lab-15">
+      <h3 data-id="314">Lab 15: Remove a Physical Volume from a VG</h3>
+      <p data-id="315" class="objective">Migrate data off PV and remove from VG.</p>
+      <ol data-id="316" class="task-list">
+        <li data-id="317">Check usage: <code data-id="318">pvs -o+pv_used</code></li>
+        <li data-id="319">Migrate data: <code data-id="320">pvmove /dev/sdc1</code></li>
+        <li data-id="321">Remove from VG: <code data-id="322">vgreduce vg_data /dev/sdc1</code></li>
+        <li data-id="323">Remove PV label: <code data-id="324">pvremove /dev/sdc1</code></li>
+      </ol>
+      <div data-id="325" class="verification"><code data-id="326">vgs</code> shows 2 PVs. <code data-id="327">pvs</code> no longer lists <code data-id="328">/dev/sdc1</code>.</div>
+      <div data-id="329" class="callout note"><code data-id="330">pvmove</code> can take time on large volumes. Ensure remaining PVs have enough free space.</div>
+    </div>
+
+    <div data-id="331" class="lab-card" id="lab-16">
+      <h3 data-id="332">Lab 16: Rename Volume Groups and Logical Volumes</h3>
+      <p data-id="333" class="objective">Rename VGs and LVs, update configuration.</p>
+      <ol data-id="334" class="task-list">
+        <li data-id="335">Rename VG: <code data-id="336">vgrename vg_data vg_storage</code></li>
+        <li data-id="337">Rename LV: <code data-id="338">lvrename vg_storage lv_projects lv_work</code></li>
+        <li data-id="339">Update <code data-id="340">/etc/fstab</code> with new VG/LV names</li>
+        <li data-id="341">Remount: <code data-id="342">mount -a</code></li>
+      </ol>
+      <div data-id="343" class="verification"><code data-id="344">vgs</code> shows vg_storage. <code data-id="345">lvs</code> shows lv_work. <code data-id="346">mount -a</code> succeeds.</div>
+    </div>
+
+    <div data-id="347" class="lab-card" id="lab-17">
+      <h3 data-id="348">Lab 17: Create an LVM Snapshot</h3>
+      <p data-id="349" class="objective">Create, use, and remove an LVM snapshot.</p>
+      <ol data-id="350" class="task-list">
+        <li data-id="351">Write test data to <code data-id="352">/mnt/projects/testfile.txt</code></li>
+        <li data-id="353">Create snapshot: <code data-id="354">lvcreate -s -n lv_work_snap -L 256M /dev/vg_storage/lv_work</code></li>
+        <li data-id="355">Modify original data on <code data-id="356">/mnt/projects</code></li>
+        <li data-id="357">Mount snapshot read-only: <code data-id="358">mount -o ro /dev/vg_storage/lv_work_snap /mnt/snap</code></li>
+        <li data-id="359">Verify original data preserved in snapshot</li>
+        <li data-id="360">Unmount and remove: <code data-id="361">umount /mnt/snap && lvremove /dev/vg_storage/lv_work_snap</code></li>
+      </ol>
+      <div data-id="362" class="verification">Snapshot preserves original data. After removal, <code data-id="363">lvs</code> no longer shows snapshot.</div>
+    </div>
+
+    <div data-id="364" class="lab-card" id="lab-18">
+      <h3 data-id="365">Lab 18: Create a Thin Provisioned Pool and Volume</h3>
+      <p data-id="366" class="objective">Create thin pool and overcommitted thin LV.</p>
+      <ol data-id="367" class="task-list">
+        <li data-id="368">Create thin pool: <code data-id="369">lvcreate -T -n thin_pool -L 1G vg_storage</code></li>
+        <li data-id="370">Create thin volume: <code data-id="371">lvcreate -T -n lv_thin -V 2G vg_storage/thin_pool</code></li>
+        <li data-id="372">Format and mount: <code data-id="373">mkfs.ext4 /dev/vg_storage/lv_thin</code></li>
+        <li data-id="374">Observe with <code data-id="375">lvs</code></li>
+      </ol>
+      <div data-id="376" class="verification"><code data-id="377">lvs</code> shows 2 GB virtual size backed by 1 GB pool. <code data-id="378">df</code> reports 2 GB.</div>
+      <div data-id="379" class="callout warning">Thin provisioning allows overcommitting. If pool fills, filesystem goes read-only. Monitor usage carefully.</div>
+    </div>
+
+    <div data-id="380" class="lab-card" id="lab-19">
+      <h3 data-id="381">Lab 19: Set a Custom Physical Extent Size</h3>
+      <p data-id="382" class="objective">Create VG with non-default PE size.</p>
+      <ol data-id="383" class="task-list">
+        <li data-id="384">Initialize PV: <code data-id="385">pvcreate /dev/sdd</code></li>
+        <li data-id="386">Create VG with 16M PE: <code data-id="387">vgcreate -s 16M vg_custom /dev/sdd</code></li>
+        <li data-id="388">Create LV using extents: <code data-id="389">lvcreate -n lv_extents -l 32 vg_custom</code> (32 × 16 MB = 512 MB)</li>
+      </ol>
+      <div data-id="390" class="verification"><code data-id="391">vgdisplay</code> shows PE Size 16.00 MiB. <code data-id="392">lvs</code> shows 512 MB.</div>
+    </div>
+
+    <div data-id="393" class="lab-card" id="lab-20">
+      <h3 data-id="394">Lab 20: Complete LVM Teardown and Rebuild</h3>
+      <p data-id="395" class="objective">Systematic teardown and rebuild to reinforce the full LVM workflow.</p>
+      <ol data-id="396" class="task-list">
+        <li data-id="397">Unmount all LVM filesystems</li>
+        <li data-id="398">Remove all LVs: <code data-id="399">lvremove</code></li>
+        <li data-id="400">Remove all VGs: <code data-id="401">vgremove</code></li>
+        <li data-id="402">Remove all PVs: <code data-id="403">pvremove</code></li>
+        <li data-id="404">Verify clean state with <code data-id="405">pvs</code>, <code data-id="406">vgs</code>, <code data-id="407">lvs</code></li>
+        <li data-id="408">Rebuild: <code data-id="409">pvcreate</code> → <code data-id="410">vgcreate</code> → <code data-id="411">lvcreate</code> → <code data-id="412">mkfs</code> → <code data-id="413">mount</code> → fstab entry</li>
+        <li data-id="414">Verify rebuild with <code data-id="415">mount -a</code> and <code data-id="416">df -Th</code></li>
+      </ol>
+      <div data-id="417" class="verification">After teardown: all LVM commands return empty. After rebuild: functional LV with mounted filesystem.</div>
+      <div data-id="418" class="callout tip">Practice this cycle until it is second nature. You must execute the full LVM workflow from memory on the exam.</div>
+    </div>
+
+    <!-- ===== SECTION 2: Virtual File System (Labs 21-35) ===== -->
+    <div data-id="419" class="section-title-bar" id="section-2-header">
+      <h2 data-id="420">Section 2: Manage and Configure the Virtual File System</h2>
+      <p data-id="421">Labs 21–35 · /proc, /sys, tmpfs, devtmpfs, mount options, overlayfs, quotas</p>
+    </div>
+
+    <div data-id="422" class="lab-card" id="lab-21">
+      <h3 data-id="423">Lab 21: Explore /proc Filesystem</h3>
+      <p data-id="424" class="objective">Understand /proc pseudo-filesystem and extract system info.</p>
+      <ol data-id="425" class="task-list">
+        <li data-id="426">Run <code data-id="427">cat /proc/meminfo</code> — memory statistics</li>
+        <li data-id="428">Run <code data-id="429">cat /proc/cpuinfo</code> — CPU details per core</li>
+        <li data-id="430">Run <code data-id="431">cat /proc/partitions</code> — kernel-registered partitions</li>
+        <li data-id="432">Run <code data-id="433">cat /proc/mounts</code> — all currently mounted filesystems</li>
+        <li data-id="434">Run <code data-id="435">cat /proc/filesystems</code> — supported filesystem types</li>
+      </ol>
+      <div data-id="436" class="verification">Explain what each file reveals about system hardware and configuration.</div>
+    </div>
+
+    <div data-id="437" class="lab-card" id="lab-22">
+      <h3 data-id="438">Lab 22: Explore /sys Filesystem</h3>
+      <p data-id="439" class="objective">Navigate /sys to query hardware info.</p>
+      <ol data-id="440" class="task-list">
+        <li data-id="441">List block devices: <code data-id="442">ls /sys/block/</code></li>
+        <li data-id="443">Check I/O scheduler: <code data-id="444">cat /sys/block/sda/queue/scheduler</code></li>
+        <li data-id="445">Check disk size in sectors: <code data-id="446">cat /sys/block/sda/size</code></li>
+        <li data-id="447">Explore filesystem info: <code data-id="448">ls /sys/fs/</code></li>
+      </ol>
+      <div data-id="449" class="verification">I/O scheduler shows active scheduler in brackets. Multiply sectors by 512 for bytes.</div>
+    </div>
+
+    <div data-id="450" class="lab-card" id="lab-23">
+      <h3 data-id="451">Lab 23: Modify Kernel Parameters via /proc/sys</h3>
+      <p data-id="452" class="objective">Read/modify kernel tunables, make persistent.</p>
+      <ol data-id="453" class="task-list">
+        <li data-id="454">Read current: <code data-id="455">cat /proc/sys/vm/swappiness</code></li>
+        <li data-id="456">Modify live: <code data-id="457">echo 10 > /proc/sys/vm/swappiness</code></li>
+        <li data-id="458">Verify: <code data-id="459">sysctl vm.swappiness</code></li>
+        <li data-id="460">Make persistent: add <code data-id="461">vm.swappiness=10</code> to <code data-id="462">/etc/sysctl.conf</code> or <code data-id="463">/etc/sysctl.d/</code></li>
+        <li data-id="464">Apply: <code data-id="465">sysctl -p</code></li>
+      </ol>
+      <div data-id="466" class="verification"><code data-id="467">sysctl vm.swappiness</code> returns 10 before and after reboot.</div>
+    </div>
+
+    <div data-id="468" class="lab-card" id="lab-24">
+      <h3 data-id="469">Lab 24: Working with tmpfs</h3>
+      <p data-id="470" class="objective">Create RAM-backed filesystem.</p>
+      <ol data-id="471" class="task-list">
+        <li data-id="472">Create mount point: <code data-id="473">mkdir /mnt/ramdisk</code></li>
+        <li data-id="474">Mount tmpfs: <code data-id="475">mount -t tmpfs -o size=256M tmpfs /mnt/ramdisk</code></li>
+        <li data-id="476">Write test file: <code data-id="477">dd if=/dev/urandom of=/mnt/ramdisk/test bs=1M count=50</code></li>
+        <li data-id="478">Check RAM usage: <code data-id="479">free -h</code></li>
+        <li data-id="480">Add to fstab: <code data-id="481">tmpfs /mnt/ramdisk tmpfs size=256M 0 0</code></li>
+      </ol>
+      <div data-id="482" class="verification"><code data-id="483">df -Th</code> shows tmpfs with 256 MB. Files are lost after reboot.</div>
+    </div>
+
+    <div data-id="484" class="lab-card" id="lab-25">
+      <h3 data-id="485">Lab 25: Working with devtmpfs and udev</h3>
+      <p data-id="486" class="objective">Understand /dev device management and write a udev rule.</p>
+      <ol data-id="487" class="task-list">
+        <li data-id="488">List devices: <code data-id="489">ls -la /dev/sd*</code></li>
+        <li data-id="490">Query device info: <code data-id="491">udevadm info /dev/sdb</code></li>
+        <li data-id="492">Full attribute walk: <code data-id="493">udevadm info -a /dev/sdb</code></li>
+        <li data-id="494">Create udev rule in <code data-id="495">/etc/udev/rules.d/99-custom.rules</code> for a symlink</li>
+        <li data-id="496">Reload: <code data-id="497">udevadm control --reload-rules && udevadm trigger</code></li>
+      </ol>
+      <div data-id="498" class="verification"><code data-id="499">ls -la /dev/my_data_disk</code> shows symlink to <code data-id="500">/dev/sdb</code>.</div>
+    </div>
+
+    <div data-id="501" class="lab-card" id="lab-26">
+      <h3 data-id="502">Lab 26: Explore Mount Namespaces</h3>
+      <p data-id="503" class="objective">Use findmnt and other tools to explore the mount tree.</p>
+      <ol data-id="504" class="task-list">
+        <li data-id="505">Tree view: <code data-id="506">findmnt</code></li>
+        <li data-id="507">Compare with <code data-id="508">mount</code> and <code data-id="509">cat /proc/mounts</code></li>
+        <li data-id="510">Filter by type: <code data-id="511">findmnt -t ext4</code></li>
+        <li data-id="512">List view: <code data-id="513">findmnt -l</code></li>
+        <li data-id="514">Check specific mount: <code data-id="515">findmnt /mnt/projects</code></li>
+      </ol>
+      <div data-id="516" class="verification"><code data-id="517">findmnt</code> presents tree view. <code data-id="518">-t</code> filter works correctly.</div>
+    </div>
+
+    <div data-id="519" class="lab-card" id="lab-27">
+      <h3 data-id="520">Lab 27: Configure Mount Options</h3>
+      <p data-id="521" class="objective">Mount with security options and test behavior.</p>
+      <ol data-id="522" class="task-list">
+        <li data-id="523">Mount with restrictions: <code data-id="524">mount -o noexec,nosuid,nodev /dev/sdb1 /mnt/secure</code></li>
+        <li data-id="525">Copy a script and try to execute (fails with <code data-id="526">noexec</code>)</li>
+        <li data-id="527">Remount with exec: <code data-id="528">mount -o remount,exec /mnt/secure</code></li>
+        <li data-id="529">Re-execute the script (succeeds)</li>
+      </ol>
+      <div data-id="530" class="verification"><code data-id="531">mount</code> output shows options changing between mounts.</div>
+    </div>
+
+    <div data-id="532" class="lab-card" id="lab-28">
+      <h3 data-id="533">Lab 28: Bind Mounts</h3>
+      <p data-id="534" class="objective">Create bind mount mirroring a directory.</p>
+      <ol data-id="535" class="task-list">
+        <li data-id="536">Create target: <code data-id="537">mkdir /mnt/log-mirror</code></li>
+        <li data-id="538">Bind mount: <code data-id="539">mount --bind /var/log /mnt/log-mirror</code></li>
+        <li data-id="540">Verify identical content in both paths</li>
+        <li data-id="541">Add to fstab: <code data-id="542">/var/log /mnt/log-mirror none bind 0 0</code></li>
+      </ol>
+      <div data-id="543" class="verification">Both paths show identical content. Creating file in one is visible in other.</div>
+    </div>
+
+    <div data-id="544" class="lab-card" id="lab-29">
+      <h3 data-id="545">Lab 29: Read-Only and Remount Operations</h3>
+      <p data-id="546" class="objective">Mount read-only and practice remounting.</p>
+      <ol data-id="547" class="task-list">
+        <li data-id="548">Mount read-only: <code data-id="549">mount -o ro /dev/sdb1 /mnt/readonly</code></li>
+        <li data-id="550">Attempt write (fails with read-only error)</li>
+        <li data-id="551">Remount read-write: <code data-id="552">mount -o remount,rw /mnt/readonly</code></li>
+        <li data-id="553">Write succeeds after remount</li>
+      </ol>
+      <div data-id="554" class="verification"><code data-id="555">mount</code> output shows <code data-id="556">ro</code> or <code data-id="557">rw</code> as expected.</div>
+    </div>
+
+    <div data-id="558" class="lab-card" id="lab-30">
+      <h3 data-id="559">Lab 30: Overlay Filesystem (overlayfs)</h3>
+      <p data-id="560" class="objective">Create overlay filesystem combining layers.</p>
+      <ol data-id="561" class="task-list">
+        <li data-id="562">Create directories: <code data-id="563">mkdir -p /tmp/overlay/{lower,upper,work,merged}</code></li>
+        <li data-id="564">Populate lower with test files</li>
+        <li data-id="565">Mount overlay: <code data-id="566">mount -t overlay overlay -o lowerdir=lower,upperdir=upper,workdir=work merged</code></li>
+        <li data-id="567">Read merged content (lower files visible)</li>
+        <li data-id="568">Write new content (goes to upper dir)</li>
+        <li data-id="569">Verify lower dir unchanged</li>
+      </ol>
+      <div data-id="570" class="verification">Merged shows files from both layers. New writes go to upper. Lower unchanged.</div>
+    </div>
+
+    <div data-id="571" class="lab-card" id="lab-31">
+      <h3 data-id="572">Lab 31: Loop Devices and File-Backed Filesystems</h3>
+      <p data-id="573" class="objective">Create filesystem inside a regular file.</p>
+      <ol data-id="574" class="task-list">
+        <li data-id="575">Create image: <code data-id="576">dd if=/dev/zero of=/tmp/disk.img bs=1M count=500</code></li>
+        <li data-id="577">Associate loop device: <code data-id="578">losetup /dev/loop0 /tmp/disk.img</code></li>
+        <li data-id="579">Create filesystem: <code data-id="580">mkfs.ext4 /dev/loop0</code></li>
+        <li data-id="581">Mount: <code data-id="582">mount /dev/loop0 /mnt/loop</code></li>
+        <li data-id="583">Write test data to verify</li>
+      </ol>
+      <div data-id="584" class="verification"><code data-id="585">losetup -a</code> shows association. <code data-id="586">df</code> shows ~500 MB ext4.</div>
+    </div>
+
+    <div data-id="587" class="lab-card" id="lab-32">
+      <h3 data-id="588">Lab 32: Explore /proc/self and /proc/PID</h3>
+      <p data-id="589" class="objective">Examine per-process info through /proc.</p>
+      <ol data-id="590" class="task-list">
+        <li data-id="591">View own mounts: <code data-id="592">cat /proc/self/mounts</code></li>
+        <li data-id="593">List own file descriptors: <code data-id="594">ls -la /proc/self/fd</code></li>
+        <li data-id="595">Start background process, note PID: <code data-id="596">sleep 600 & echo $!</code></li>
+        <li data-id="597">Examine: <code data-id="598">cat /proc/PID/status</code> and <code data-id="599">cat /proc/PID/cmdline</code></li>
+        <li data-id="600">Check I/O stats: <code data-id="601">cat /proc/PID/io</code></li>
+      </ol>
+      <div data-id="602" class="verification"><code data-id="603">/proc/self</code> refers to the calling process. <code data-id="604">/proc/PID/io</code> shows read/write bytes.</div>
+    </div>
+
+    <div data-id="605" class="lab-card" id="lab-33">
+      <h3 data-id="606">Lab 33: Configure Filesystem Quotas (User)</h3>
+      <p data-id="607" class="objective">Enable per-user disk quotas on ext4.</p>
+      <ol data-id="608" class="task-list">
+        <li data-id="609">Add <code data-id="610">usrquota</code> mount option, remount the filesystem</li>
+        <li data-id="611">Initialize quota database: <code data-id="612">quotacheck -cum /mnt/projects</code></li>
+        <li data-id="613">Enable quotas: <code data-id="614">quotaon /mnt/projects</code></li>
+        <li data-id="615">Set limits: <code data-id="616">edquota testuser</code> (soft 50 MB, hard 100 MB)</li>
+        <li data-id="617">Test exceeding soft limit (warning)</li>
+        <li data-id="618">Test exceeding hard limit (write fails)</li>
+      </ol>
+      <div data-id="619" class="verification"><code data-id="620">repquota /mnt/projects</code> shows usage. <code data-id="621">quota testuser</code> shows limits.</div>
+    </div>
+
+    <div data-id="622" class="lab-card" id="lab-34">
+      <h3 data-id="623">Lab 34: Configure Filesystem Quotas (Group)</h3>
+      <p data-id="624" class="objective">Enable per-group disk quotas.</p>
+      <ol data-id="625" class="task-list">
+        <li data-id="626">Add <code data-id="627">grpquota</code> mount option, remount</li>
+        <li data-id="628">Initialize: <code data-id="629">quotacheck -cgm /mnt/projects</code></li>
+        <li data-id="630">Enable: <code data-id="631">quotaon /mnt/projects</code></li>
+        <li data-id="632">Set group limits: <code data-id="633">edquota -g devteam</code></li>
+      </ol>
+      <div data-id="634" class="verification"><code data-id="635">repquota -g /mnt/projects</code> shows group reports.</div>
+    </div>
+
+    <div data-id="636" class="lab-card" id="lab-35">
+      <h3 data-id="637">Lab 35: Persistent Mount Configuration Audit</h3>
+      <p data-id="638" class="objective">Audit /etc/fstab and recover from a bad entry.</p>
+      <ol data-id="639" class="task-list">
+        <li data-id="640">Review fstab, verify UUIDs match <code data-id="641">blkid</code> output</li>
+        <li data-id="642">Validate: <code data-id="643">findmnt --verify</code></li>
+        <li data-id="644">Test: <code data-id="645">mount -a</code></li>
+        <li data-id="646">Add bad entry with non-existent UUID</li>
+        <li data-id="647">Reboot, observe boot failure (drops to emergency mode)</li>
+        <li data-id="648">Fix in emergency mode, reboot</li>
+      </ol>
+      <div data-id="649" class="verification">System boots after fix. <code data-id="650">findmnt --verify</code> returns clean.</div>
+      <div data-id="651" class="callout tip">Always add <code data-id="652">nofail</code> option to non-critical mounts. This prevents boot failures if the device is missing.</div>
+    </div>
+
+    <!-- ===== SECTION 3: Filesystems (Labs 36-55) ===== -->
+    <div data-id="653" class="section-title-bar" id="section-3-header">
+      <h2 data-id="654">Section 3: Create, Manage, and Troubleshoot Filesystems</h2>
+      <p data-id="655">Labs 36–55 · ext4, XFS, Btrfs, VFAT, labels, UUIDs, tune, repair, resize, quotas, troubleshooting</p>
+    </div>
+
+    <div data-id="656" class="lab-card" id="lab-36">
+      <h3 data-id="657">Lab 36: Create ext4 Filesystem</h3>
+      <p data-id="658" class="objective">Create ext4 with custom label and reserved blocks.</p>
+      <ol data-id="659" class="task-list">
+        <li data-id="660">Create filesystem: <code data-id="661">mkfs.ext4 -L mydata -m 2 /dev/sdb1</code></li>
+      </ol>
+      <div data-id="662" class="verification"><code data-id="663">tune2fs -l</code> confirms label and 2% reserved. <code data-id="664">blkid</code> shows LABEL and UUID.</div>
+    </div>
+
+    <div data-id="665" class="lab-card" id="lab-37">
+      <h3 data-id="666">Lab 37: Create XFS Filesystem</h3>
+      <p data-id="667" class="objective">Create XFS and inspect metadata.</p>
+      <ol data-id="668" class="task-list">
+        <li data-id="669">Create: <code data-id="670">mkfs.xfs -L xfsdata /dev/sdb2</code></li>
+        <li data-id="671">Mount and inspect</li>
+        <li data-id="672">View metadata: <code data-id="673">xfs_info /mnt/xfsdata</code></li>
+      </ol>
+      <div data-id="674" class="verification"><code data-id="675">xfs_info</code> shows block size, log section, data section.</div>
+    </div>
+
+    <div data-id="676" class="lab-card" id="lab-38">
+      <h3 data-id="677">Lab 38: Create Btrfs Filesystem</h3>
+      <p data-id="678" class="objective">Create Btrfs, subvolumes, and snapshots.</p>
+      <ol data-id="679" class="task-list">
+        <li data-id="680">Create: <code data-id="681">mkfs.btrfs -L btrfstest /dev/sdc1</code></li>
+        <li data-id="682">Mount the filesystem</li>
+        <li data-id="683">Create subvolume: <code data-id="684">btrfs subvolume create /mnt/btrfs/data</code></li>
+        <li data-id="685">Write data to subvolume</li>
+        <li data-id="686">Create read-only snapshot: <code data-id="687">btrfs subvolume snapshot -r /mnt/btrfs/data /mnt/btrfs/data-snap</code></li>
+        <li data-id="688">List subvolumes: <code data-id="689">btrfs subvolume list /mnt/btrfs</code></li>
+      </ol>
+      <div data-id="690" class="verification">Both subvolume and snapshot are listed.</div>
+    </div>
+
+    <div data-id="691" class="lab-card" id="lab-39">
+      <h3 data-id="692">Lab 39: Create VFAT/FAT32 Filesystem</h3>
+      <p data-id="693" class="objective">Create FAT32 for USB/EFI scenarios.</p>
+      <ol data-id="694" class="task-list">
+        <li data-id="695">Create: <code data-id="696">mkfs.vfat -F 32 /dev/sdd1</code></li>
+        <li data-id="697">Mount the filesystem</li>
+        <li data-id="698">Note that Linux permissions are not supported</li>
+      </ol>
+      <div data-id="699" class="verification"><code data-id="700">df -Th</code> shows "vfat".</div>
+    </div>
+
+    <div data-id="701" class="lab-card" id="lab-40">
+      <h3 data-id="702">Lab 40: Filesystem Labels and UUIDs</h3>
+      <p data-id="703" class="objective">Set/modify labels, mount by UUID/LABEL.</p>
+      <ol data-id="704" class="task-list">
+        <li data-id="705">Set ext4 label: <code data-id="706">e2label /dev/sdb1 mydata</code></li>
+        <li data-id="707">Set XFS label: <code data-id="708">xfs_admin -L xfsdata /dev/sdb2</code></li>
+        <li data-id="709">Display UUIDs: <code data-id="710">blkid</code></li>
+        <li data-id="711">Mount by UUID in fstab: <code data-id="712">UUID=xxxx /mnt/data ext4 defaults 0 2</code></li>
+        <li data-id="713">Mount by LABEL in fstab: <code data-id="714">LABEL=mydata /mnt/data ext4 defaults 0 2</code></li>
+      </ol>
+      <div data-id="715" class="verification"><code data-id="716">mount -a</code> succeeds for both methods.</div>
+      <div data-id="717" class="callout tip">UUIDs are preferred over device paths because they persist across reboots. LABELs must be unique across the system.</div>
+    </div>
+
+    <div data-id="718" class="lab-card" id="lab-41">
+      <h3 data-id="719">Lab 41: Tune ext4 Filesystem Parameters</h3>
+      <p data-id="720" class="objective">Modify ext4 parameters with tune2fs.</p>
+      <ol data-id="721" class="task-list">
+        <li data-id="722">Set max mount count: <code data-id="723">tune2fs -c 30 /dev/sdb1</code></li>
+        <li data-id="724">Set check interval: <code data-id="725">tune2fs -i 90d /dev/sdb1</code></li>
+        <li data-id="726">Reduce reserved blocks: <code data-id="727">tune2fs -m 1 /dev/sdb1</code></li>
+        <li data-id="728">Set reserved user: <code data-id="729">tune2fs -u testuser /dev/sdb1</code></li>
+        <li data-id="730">Force check at next boot</li>
+      </ol>
+      <div data-id="731" class="verification"><code data-id="732">tune2fs -l /dev/sdb1</code> shows all changes applied.</div>
+    </div>
+
+    <div data-id="733" class="lab-card" id="lab-42">
+      <h3 data-id="734">Lab 42: Check and Repair ext4 Filesystem</h3>
+      <p data-id="735" class="objective">Force check and practice superblock recovery.</p>
+      <ol data-id="736" class="task-list">
+        <li data-id="737">Unmount the filesystem</li>
+        <li data-id="738">Force check: <code data-id="739">e2fsck -f /dev/sdb1</code></li>
+        <li data-id="740">Find backup superblocks: <code data-id="741">dumpe2fs /dev/sdb1 | grep superblock</code></li>
+        <li data-id="742">Corrupt superblock with <code data-id="743">dd</code> (test only!)</li>
+        <li data-id="744">Attempt normal check (fails)</li>
+        <li data-id="745">Repair with backup superblock: <code data-id="746">e2fsck -b 32768 /dev/sdb1</code></li>
+      </ol>
+      <div data-id="747" class="verification">Filesystem mounts after repair, data intact.</div>
+      <div data-id="748" class="callout warning">Corrupting superblock destroys critical metadata. Only do this on a test filesystem you can afford to lose.</div>
+    </div>
+
+    <div data-id="749" class="lab-card" id="lab-43">
+      <h3 data-id="750">Lab 43: Check and Repair XFS Filesystem</h3>
+      <p data-id="751" class="objective">Use xfs_repair to check and fix XFS.</p>
+      <ol data-id="752" class="task-list">
+        <li data-id="753">Unmount the filesystem</li>
+        <li data-id="754">Dry run: <code data-id="755">xfs_repair -n /dev/sdb2</code></li>
+        <li data-id="756">Repair: <code data-id="757">xfs_repair /dev/sdb2</code></li>
+        <li data-id="758">If dirty log: <code data-id="759">xfs_repair -L /dev/sdb2</code> (last resort — zeroes log)</li>
+      </ol>
+      <div data-id="760" class="verification"><code data-id="761">xfs_repair</code> completes clean. Remount succeeds.</div>
+      <div data-id="762" class="callout note">XFS has no traditional <code data-id="763">fsck</code>. <code data-id="764">xfs_repair</code> is the equivalent. <code data-id="765">xfs_check</code> is deprecated.</div>
+    </div>
+
+    <div data-id="766" class="lab-card" id="lab-44">
+      <h3 data-id="767">Lab 44: Resize ext4 Filesystem</h3>
+      <p data-id="768" class="objective">Shrink and grow ext4 with resize2fs.</p>
+      <ol data-id="769" class="task-list">
+        <li data-id="770">Unmount the filesystem</li>
+        <li data-id="771">Force check: <code data-id="772">e2fsck -f /dev/sdb1</code></li>
+        <li data-id="773">Shrink: <code data-id="774">resize2fs /dev/sdb1 500M</code></li>
+        <li data-id="775">Remount, verify ~500 MB</li>
+        <li data-id="776">Grow online: <code data-id="777">resize2fs /dev/sdb1</code> (no size = use all available space)</li>
+        <li data-id="778">Verify full partition size</li>
+      </ol>
+      <div data-id="779" class="verification">After shrink ~500 MB, after grow full partition size.</div>
+    </div>
+
+    <div data-id="780" class="lab-card" id="lab-45">
+      <h3 data-id="781">Lab 45: Grow XFS Filesystem</h3>
+      <p data-id="782" class="objective">Extend XFS after expanding underlying storage.</p>
+      <ol data-id="783" class="task-list">
+        <li data-id="784">Extend LV: <code data-id="785">lvextend -L +500M /dev/vg_storage/lv_backups</code></li>
+        <li data-id="786">Grow XFS: <code data-id="787">xfs_growfs /mnt/backups</code></li>
+      </ol>
+      <div data-id="788" class="verification"><code data-id="789">df -Th</code> shows increased size.</div>
+      <div data-id="790" class="callout important">XFS can only be grown, never shrunk. This is a one-way operation.</div>
+    </div>
+
+    <div data-id="791" class="lab-card" id="lab-46">
+      <h3 data-id="792">Lab 46: Mount Filesystems Manually</h3>
+      <p data-id="793" class="objective">Practice mounting by device, UUID, and LABEL.</p>
+      <ol data-id="794" class="task-list">
+        <li data-id="795">Mount by device: <code data-id="796">mount /dev/sdb1 /mnt/data</code></li>
+        <li data-id="797">Mount by UUID: <code data-id="798">mount UUID=xxxx /mnt/data</code></li>
+        <li data-id="799">Mount by LABEL: <code data-id="800">mount LABEL=mydata /mnt/data</code></li>
+        <li data-id="801">Mount with explicit type: <code data-id="802">mount -t ext4 /dev/sdb1 /mnt/data</code></li>
+      </ol>
+      <div data-id="803" class="verification">Each method mounts successfully.</div>
+    </div>
+
+    <div data-id="804" class="lab-card" id="lab-47">
+      <h3 data-id="805">Lab 47: Configure /etc/fstab Entries</h3>
+      <p data-id="806" class="objective">Write correct fstab entries, understand all 6 fields.</p>
+      <ol data-id="807" class="task-list">
+        <li data-id="808">Add entries for ext4, xfs, swap using UUID</li>
+        <li data-id="809">Document all 6 fields: Device, Mount Point, Type, Options, Dump, Pass</li>
+        <li data-id="810">Test: <code data-id="811">mount -a</code></li>
+      </ol>
+      <div data-id="812" class="verification"><code data-id="813">mount -a</code> produces no errors. All entries visible in <code data-id="814">findmnt</code>.</div>
+    </div>
+
+    <div data-id="815" class="lab-card" id="lab-48">
+      <h3 data-id="816">Lab 48: Use systemd Mount Units</h3>
+      <p data-id="817" class="objective">Create .mount unit file as alternative to fstab.</p>
+      <ol data-id="818" class="task-list">
+        <li data-id="819">Create <code data-id="820">/etc/systemd/system/mnt-data.mount</code></li>
+        <li data-id="821">Add <code data-id="822">[Unit]</code>, <code data-id="823">[Mount]</code>, <code data-id="824">[Install]</code> sections</li>
+        <li data-id="825">Reload: <code data-id="826">systemctl daemon-reload</code></li>
+        <li data-id="827">Enable and start: <code data-id="828">systemctl enable --now mnt-data.mount</code></li>
+      </ol>
+      <div data-id="829" class="verification"><code data-id="830">systemctl status mnt-data.mount</code> shows "active (mounted)". <code data-id="831">findmnt</code> shows mount.</div>
+    </div>
+
+    <div data-id="832" class="lab-card" id="lab-49">
+      <h3 data-id="833">Lab 49: Troubleshoot Boot Failures from Bad fstab</h3>
+      <p data-id="834" class="objective">Break fstab, experience failure, recover.</p>
+      <ol data-id="835" class="task-list">
+        <li data-id="836">Add bad UUID entry without <code data-id="837">nofail</code></li>
+        <li data-id="838">Reboot (drops to emergency mode)</li>
+        <li data-id="839">Enter root password</li>
+        <li data-id="840">Remount root read-write: <code data-id="841">mount -o remount,rw /</code></li>
+        <li data-id="842">Fix <code data-id="843">/etc/fstab</code></li>
+        <li data-id="844">Reboot to verify</li>
+      </ol>
+      <div data-id="845" class="verification">System boots normally after fix. Take a snapshot before this lab!</div>
+    </div>
+
+    <div data-id="846" class="lab-card" id="lab-50">
+      <h3 data-id="847">Lab 50: Recover Data from Damaged Filesystem</h3>
+      <p data-id="848" class="objective">Practice ext4 recovery with backup superblocks.</p>
+      <ol data-id="849" class="task-list">
+        <li data-id="850">Create and populate ext4 filesystem</li>
+        <li data-id="851">Find backups: <code data-id="852">dumpe2fs /dev/sdb1 | grep superblock</code></li>
+        <li data-id="853">Corrupt primary superblock with <code data-id="854">dd</code></li>
+        <li data-id="855">Recover: <code data-id="856">e2fsck -b 32768 /dev/sdb1</code></li>
+        <li data-id="857">Mount and verify data integrity</li>
+      </ol>
+      <div data-id="858" class="verification">Filesystem mounts, most/all files recoverable.</div>
+    </div>
+
+    <div data-id="859" class="lab-card" id="lab-51">
+      <h3 data-id="860">Lab 51: Working with Disk Usage Tools</h3>
+      <p data-id="861" class="objective">Analyze disk space with multiple tools.</p>
+      <ol data-id="862" class="task-list">
+        <li data-id="863">Check directory size: <code data-id="864">du -sh /var/log</code></li>
+        <li data-id="865">Breakdown: <code data-id="866">du --max-depth=1 -h /var</code></li>
+        <li data-id="867">Interactive: <code data-id="868">ncdu /var</code></li>
+        <li data-id="869">Inode usage: <code data-id="870">df -ih</code></li>
+        <li data-id="871">Find large files: <code data-id="872">find / -xdev -size +100M</code></li>
+      </ol>
+      <div data-id="873" class="verification">Can identify largest directories and files using each tool.</div>
+    </div>
+
+    <div data-id="874" class="lab-card" id="lab-52">
+      <h3 data-id="875">Lab 52: Managing Inodes</h3>
+      <p data-id="876" class="objective">Understand inode exhaustion.</p>
+      <ol data-id="877" class="task-list">
+        <li data-id="878">Create filesystem with limited inodes: <code data-id="879">mkfs.ext4 -N 1000 /dev/sdb1</code></li>
+        <li data-id="880">Create many small files in a loop</li>
+        <li data-id="881">Observe "No space left on device" error with free space remaining</li>
+        <li data-id="882">Compare <code data-id="883">df -ih</code> (100% inode usage) vs <code data-id="884">df -h</code> (free space available)</li>
+      </ol>
+      <div data-id="885" class="verification"><code data-id="886">df -h</code> shows free space but <code data-id="887">df -i</code> shows 100% inode usage.</div>
+      <div data-id="888" class="callout note">XFS allocates inodes dynamically, making inode exhaustion much less likely than on ext4.</div>
+    </div>
+
+    <div data-id="889" class="lab-card" id="lab-53">
+      <h3 data-id="890">Lab 53: File Attributes and Extended Attributes</h3>
+      <p data-id="891" class="objective">Use chattr, lsattr, setfattr, getfattr.</p>
+      <ol data-id="892" class="task-list">
+        <li data-id="893">Set immutable: <code data-id="894">chattr +i /mnt/data/important.txt</code></li>
+        <li data-id="895">Verify: <code data-id="896">lsattr /mnt/data/important.txt</code></li>
+        <li data-id="897">Try delete (fails — Operation not permitted)</li>
+        <li data-id="898">Remove immutable: <code data-id="899">chattr -i /mnt/data/important.txt</code></li>
+        <li data-id="900">Set append-only: <code data-id="901">chattr +a /mnt/data/logfile.txt</code></li>
+        <li data-id="902">Set extended attribute: <code data-id="903">setfattr -n user.department -v "engineering" /mnt/data/file.txt</code></li>
+        <li data-id="904">Read: <code data-id="905">getfattr -d /mnt/data/file.txt</code></li>
+      </ol>
+      <div data-id="906" class="verification"><code data-id="907">lsattr</code> shows flags. <code data-id="908">getfattr</code> returns stored value.</div>
+    </div>
+
+    <div data-id="909" class="lab-card" id="lab-54">
+      <h3 data-id="910">Lab 54: Filesystem Freeze and Unfreeze</h3>
+      <p data-id="911" class="objective">Freeze filesystem for consistent snapshots.</p>
+      <ol data-id="912" class="task-list">
+        <li data-id="913">Freeze: <code data-id="914">fsfreeze -f /mnt/data</code></li>
+        <li data-id="915">Attempt write in another terminal (hangs)</li>
+        <li data-id="916">Take LVM snapshot or backup while frozen</li>
+        <li data-id="917">Unfreeze: <code data-id="918">fsfreeze -u /mnt/data</code></li>
+        <li data-id="919">Hanging write completes</li>
+      </ol>
+      <div data-id="920" class="verification">While frozen, I/O blocks. After unfreeze, I/O resumes.</div>
+      <div data-id="921" class="callout tip"><code data-id="922">fsfreeze</code> is the filesystem-agnostic alternative to <code data-id="923">xfs_freeze</code>. Works on ext4, XFS, and more.</div>
+    </div>
+
+    <div data-id="924" class="lab-card" id="lab-55">
+      <h3 data-id="925">Lab 55: Comprehensive Filesystem Troubleshooting Scenario</h3>
+      <p data-id="926" class="objective">Diagnose and fix multiple filesystem problems in sequence.</p>
+      <ol data-id="927" class="task-list">
+        <li data-id="928"><strong data-id="929">Problem 1: Wrong fstab UUID</strong> — check <code data-id="930">journalctl -b</code>, compare <code data-id="931">blkid</code>, fix UUID</li>
+        <li data-id="932"><strong data-id="933">Problem 2: Full filesystem</strong> — <code data-id="934">df -h</code>, <code data-id="935">du</code>, find and remove large files</li>
+        <li data-id="936"><strong data-id="937">Problem 3: Inode exhaustion</strong> — <code data-id="938">df -i</code>, find dirs with many small files, clean up</li>
+        <li data-id="939"><strong data-id="940">Problem 4: Corrupted superblock</strong> — <code data-id="941">e2fsck -b 32768</code> to repair</li>
+      </ol>
+      <div data-id="942" class="verification">All four problems resolved, all filesystems mounted and working.</div>
+    </div>
+
+    <!-- ===== SECTION 4: Remote & Network (Labs 56-72) ===== -->
+    <div data-id="943" class="section-title-bar" id="section-4-header">
+      <h2 data-id="944">Section 4: Use Remote Filesystems and Network Block Devices</h2>
+      <p data-id="945">Labs 56–72 · NFS, CIFS/Samba, SSHFS, iSCSI, NBD, Kerberos, Troubleshooting</p>
+    </div>
+
+    <div data-id="946" class="callout note mb-4">Labs 56–72 require two VMs or a single VM using loopback (127.0.0.1) for client and server roles.</div>
+
+    <div data-id="947" class="lab-card" id="lab-56">
+      <h3 data-id="948">Lab 56: Install and Configure NFS Server</h3>
+      <p data-id="949" class="objective">Set up NFS server and export a directory.</p>
+      <ol data-id="950" class="task-list">
+        <li data-id="951">Install: <code data-id="952">apt install nfs-kernel-server</code> (or <code data-id="953">dnf install nfs-utils</code>)</li>
+        <li data-id="954">Create share: <code data-id="955">mkdir -p /srv/nfs/shared && chmod 777 /srv/nfs/shared</code></li>
+        <li data-id="956">Configure <code data-id="957">/etc/exports</code>: <code data-id="958">/srv/nfs/shared *(rw,sync,no_subtree_check)</code></li>
+        <li data-id="959">Apply: <code data-id="960">exportfs -ra</code></li>
+        <li data-id="961">Enable: <code data-id="962">systemctl enable --now nfs-server</code></li>
+      </ol>
+      <div data-id="963" class="verification"><code data-id="964">exportfs -v</code> confirms export. <code data-id="965">showmount -e localhost</code> lists share.</div>
+    </div>
+
+    <div data-id="966" class="lab-card" id="lab-57">
+      <h3 data-id="967">Lab 57: Mount NFS Share (Manual)</h3>
+      <p data-id="968" class="objective">Manually mount NFS export.</p>
+      <ol data-id="969" class="task-list">
+        <li data-id="970">Install client: <code data-id="971">apt install nfs-common</code></li>
+        <li data-id="972">Create mount point: <code data-id="973">mkdir /mnt/nfs</code></li>
+        <li data-id="974">Mount: <code data-id="975">mount -t nfs server:/srv/nfs/shared /mnt/nfs</code></li>
+        <li data-id="976">Test read/write operations</li>
+      </ol>
+      <div data-id="977" class="verification"><code data-id="978">df -Th</code> shows nfs4 type.</div>
+    </div>
+
+    <div data-id="979" class="lab-card" id="lab-58">
+      <h3 data-id="980">Lab 58: Persistent NFS Mount via fstab</h3>
+      <p data-id="981" class="objective">Configure persistent NFS mount.</p>
+      <ol data-id="982" class="task-list">
+        <li data-id="983">Add fstab entry: <code data-id="984">server:/srv/nfs/shared /mnt/nfs nfs4 _netdev,defaults 0 0</code></li>
+        <li data-id="985">Test: <code data-id="986">mount -a</code></li>
+        <li data-id="987">Reboot and verify mount persists</li>
+      </ol>
+      <div data-id="988" class="verification"><code data-id="989">findmnt</code> shows NFS after reboot.</div>
+      <div data-id="990" class="callout tip"><code data-id="991">_netdev</code> tells systemd to wait for network before mounting. Always use for network mounts.</div>
+    </div>
+
+    <div data-id="992" class="lab-card" id="lab-59">
+      <h3 data-id="993">Lab 59: NFS Mount Options Deep Dive</h3>
+      <p data-id="994" class="objective">Experiment with soft vs hard, intr, timeo, vers.</p>
+      <ol data-id="995" class="task-list">
+        <li data-id="996">Mount with <code data-id="997">soft,timeo=10,retrans=3</code></li>
+        <li data-id="998">Mount with <code data-id="999">hard,intr</code></li>
+        <li data-id="1000">Stop NFS server, observe behavior difference</li>
+        <li data-id="1001">Specify NFS version: <code data-id="1002">vers=4</code></li>
+      </ol>
+      <div data-id="1003" class="verification">Soft returns errors on timeout. Hard hangs until server returns.</div>
+      <div data-id="1004" class="callout note"><code data-id="1005">soft</code> mounts risk data corruption. <code data-id="1006">hard</code> mounts are safer for critical data.</div>
+    </div>
+
+    <div data-id="1007" class="lab-card" id="lab-60">
+      <h3 data-id="1008">Lab 60: NFS Security - Configuring Allowed Networks</h3>
+      <p data-id="1009" class="objective">Restrict NFS access by subnet.</p>
+      <ol data-id="1010" class="task-list">
+        <li data-id="1011">Modify <code data-id="1012">/etc/exports</code>: <code data-id="1013">/srv/nfs/shared 192.168.1.0/24(rw,sync)</code></li>
+        <li data-id="1014">Apply: <code data-id="1015">exportfs -ra</code></li>
+        <li data-id="1016">Test from allowed IP (succeeds)</li>
+        <li data-id="1017">Test from disallowed IP (fails)</li>
+        <li data-id="1018">Verify: <code data-id="1019">showmount -e</code></li>
+      </ol>
+      <div data-id="1020" class="verification"><code data-id="1021">exportfs -v</code> shows subnet restrictions.</div>
+    </div>
+
+    <div data-id="1022" class="lab-card" id="lab-61">
+      <h3 data-id="1023">Lab 61: Install and Configure Samba Server</h3>
+      <p data-id="1024" class="objective">Set up CIFS/SMB file share.</p>
+      <ol data-id="1025" class="task-list">
+        <li data-id="1026">Install: <code data-id="1027">apt install samba</code></li>
+        <li data-id="1028">Create share directory: <code data-id="1029">mkdir -p /srv/samba/share</code></li>
+        <li data-id="1030">Edit <code data-id="1031">/etc/samba/smb.conf</code> — add [share] section</li>
+        <li data-id="1032">Add Samba user: <code data-id="1033">smbpasswd -a smbuser</code></li>
+        <li data-id="1034">Restart: <code data-id="1035">systemctl restart smbd</code></li>
+      </ol>
+      <div data-id="1036" class="verification"><code data-id="1037">testparm</code> validates config. <code data-id="1038">smbclient -L localhost</code> lists shares.</div>
+    </div>
+
+    <div data-id="1039" class="lab-card" id="lab-62">
+      <h3 data-id="1040">Lab 62: Mount CIFS/SMB Share (Manual)</h3>
+      <p data-id="1041" class="objective">Mount Samba share using CIFS.</p>
+      <ol data-id="1042" class="task-list">
+        <li data-id="1043">Install: <code data-id="1044">apt install cifs-utils</code></li>
+        <li data-id="1045">Create mount point: <code data-id="1046">mkdir /mnt/samba</code></li>
+        <li data-id="1047">Mount: <code data-id="1048">mount -t cifs //server/share /mnt/samba -o username=smbuser</code></li>
+        <li data-id="1049">Test access (read/write)</li>
+      </ol>
+      <div data-id="1050" class="verification"><code data-id="1051">df -Th</code> shows "cifs".</div>
+    </div>
+
+    <div data-id="1052" class="lab-card" id="lab-63">
+      <h3 data-id="1053">Lab 63: Persistent CIFS Mount via fstab</h3>
+      <p data-id="1054" class="objective">Configure persistent CIFS with credentials file.</p>
+      <ol data-id="1055" class="task-list">
+        <li data-id="1056">Create credentials file: <code data-id="1057">/root/.smbcredentials</code> with <code data-id="1058">username=</code> and <code data-id="1059">password=</code></li>
+        <li data-id="1060">Secure: <code data-id="1061">chmod 600 /root/.smbcredentials</code></li>
+        <li data-id="1062">Add fstab: <code data-id="1063">//server/share /mnt/samba cifs credentials=/root/.smbcredentials,_netdev 0 0</code></li>
+        <li data-id="1064">Test: <code data-id="1065">mount -a</code></li>
+      </ol>
+      <div data-id="1066" class="verification">Mount persists across reboots. Credentials not exposed in fstab.</div>
+    </div>
+
+    <div data-id="1067" class="lab-card" id="lab-64">
+      <h3 data-id="1068">Lab 64: Mount CIFS with Multiuser Option</h3>
+      <p data-id="1069" class="objective">Configure CIFS multiuser mount.</p>
+      <ol data-id="1070" class="task-list">
+        <li data-id="1071">Mount with: <code data-id="1072">multiuser,sec=ntlmssp</code></li>
+        <li data-id="1073">As regular user: <code data-id="1074">cifscreds add server</code></li>
+        <li data-id="1075">Access share with user-specific credentials</li>
+      </ol>
+      <div data-id="1076" class="verification">Different users access the share with their own permissions.</div>
+    </div>
+
+    <div data-id="1077" class="lab-card" id="lab-65">
+      <h3 data-id="1078">Lab 65: SSHFS - Mount Remote Filesystem over SSH</h3>
+      <p data-id="1079" class="objective">Use SSHFS for encrypted remote mount.</p>
+      <ol data-id="1080" class="task-list">
+        <li data-id="1081">Install: <code data-id="1082">apt install sshfs</code></li>
+        <li data-id="1083">Mount: <code data-id="1084">sshfs user@server:/remote/path /mnt/sshfs</code></li>
+        <li data-id="1085">Test file access</li>
+        <li data-id="1086">Add to fstab with <code data-id="1087">fuse.sshfs</code> type</li>
+      </ol>
+      <div data-id="1088" class="verification"><code data-id="1089">mount | grep sshfs</code> shows mount. Unmount with <code data-id="1090">fusermount -u /mnt/sshfs</code>.</div>
+    </div>
+
+    <div data-id="1091" class="lab-card" id="lab-66">
+      <h3 data-id="1092">Lab 66: Configure iSCSI Target (Server)</h3>
+      <p data-id="1093" class="objective">Set up iSCSI target with targetcli.</p>
+      <ol data-id="1094" class="task-list">
+        <li data-id="1095">Install: <code data-id="1096">apt install targetcli-fb</code></li>
+        <li data-id="1097">Create fileio backstore</li>
+        <li data-id="1098">Create IQN target</li>
+        <li data-id="1099">Create LUN</li>
+        <li data-id="1100">Create ACL for initiator</li>
+        <li data-id="1101">Save: <code data-id="1102">saveconfig</code> and exit</li>
+      </ol>
+      <div data-id="1103" class="verification"><code data-id="1104">targetcli ls</code> shows full configuration tree.</div>
+    </div>
+
+    <div data-id="1105" class="lab-card" id="lab-67">
+      <h3 data-id="1106">Lab 67: Connect iSCSI Initiator (Client)</h3>
+      <p data-id="1107" class="objective">Connect to iSCSI target.</p>
+      <ol data-id="1108" class="task-list">
+        <li data-id="1109">Install: <code data-id="1110">apt install open-iscsi</code></li>
+        <li data-id="1111">Set initiator name in <code data-id="1112">/etc/iscsi/initiatorname.iscsi</code></li>
+        <li data-id="1113">Restart: <code data-id="1114">systemctl restart iscsid</code></li>
+        <li data-id="1115">Discover: <code data-id="1116">iscsiadm -m discovery -t sendtargets -p server:3260</code></li>
+        <li data-id="1117">Login: <code data-id="1118">iscsiadm -m node --login</code></li>
+      </ol>
+      <div data-id="1119" class="verification"><code data-id="1120">lsblk</code> shows new device. <code data-id="1121">iscsiadm -m session</code> shows active session.</div>
+    </div>
+
+    <div data-id="1122" class="lab-card" id="lab-68">
+      <h3 data-id="1123">Lab 68: Create Filesystem on iSCSI Disk</h3>
+      <p data-id="1124" class="objective">Partition, format, mount iSCSI disk.</p>
+      <ol data-id="1125" class="task-list">
+        <li data-id="1126">Partition the iSCSI disk with <code data-id="1127">fdisk</code></li>
+        <li data-id="1128">Create filesystem: <code data-id="1129">mkfs.ext4</code></li>
+        <li data-id="1130">Mount with <code data-id="1131">_netdev</code> option</li>
+        <li data-id="1132">Add to fstab</li>
+        <li data-id="1133">Configure automatic iSCSI login: <code data-id="1134">iscsiadm -m node -o update -n node.startup -v automatic</code></li>
+      </ol>
+      <div data-id="1135" class="verification">After reboot, iSCSI session established and filesystem mounted automatically.</div>
+    </div>
+
+    <div data-id="1136" class="lab-card" id="lab-69">
+      <h3 data-id="1137">Lab 69: Network Block Device (NBD)</h3>
+      <p data-id="1138" class="objective">Export and connect block device via NBD.</p>
+      <ol data-id="1139" class="task-list">
+        <li data-id="1140">Install: <code data-id="1141">apt install nbd-server nbd-client</code></li>
+        <li data-id="1142">Create disk image: <code data-id="1143">dd if=/dev/zero of=/srv/nbd/disk.img bs=1M count=500</code></li>
+        <li data-id="1144">Configure <code data-id="1145">/etc/nbd-server/config</code></li>
+        <li data-id="1146">Start server: <code data-id="1147">systemctl start nbd-server</code></li>
+        <li data-id="1148">Connect client: <code data-id="1149">nbd-client server 10809 /dev/nbd0</code></li>
+        <li data-id="1150">Format and mount <code data-id="1151">/dev/nbd0</code></li>
+      </ol>
+      <div data-id="1152" class="verification"><code data-id="1153">lsblk</code> shows <code data-id="1154">/dev/nbd0</code>. Files persist on server image.</div>
+    </div>
+
+    <div data-id="1155" class="lab-card" id="lab-70">
+      <h3 data-id="1156">Lab 70: NFS with Kerberos Authentication (Overview)</h3>
+      <p data-id="1157" class="objective">Understand NFSv4 Kerberos security modes.</p>
+      <ol data-id="1158" class="task-list">
+        <li data-id="1159">Review modes: <code data-id="1160">sec=krb5</code> (authentication only)</li>
+        <li data-id="1161">Review: <code data-id="1162">sec=krb5i</code> (authentication + integrity checking)</li>
+        <li data-id="1163">Review: <code data-id="1164">sec=krb5p</code> (authentication + integrity + privacy/encryption)</li>
+        <li data-id="1165">Review <code data-id="1166">/etc/idmapd.conf</code> for domain mapping</li>
+        <li data-id="1167">Note: full Kerberos requires a KDC (Key Distribution Center) infrastructure</li>
+      </ol>
+      <div data-id="1168" class="verification">Can explain differences between krb5, krb5i, and krb5p security modes.</div>
+    </div>
+
+    <div data-id="1169" class="lab-card" id="lab-71">
+      <h3 data-id="1170">Lab 71: Troubleshoot NFS Mount Failures</h3>
+      <p data-id="1171" class="objective">Diagnose common NFS problems.</p>
+      <ol data-id="1172" class="task-list">
+        <li data-id="1173"><strong data-id="1174">Wrong export path</strong> — use <code data-id="1175">showmount -e server</code> to verify</li>
+        <li data-id="1176"><strong data-id="1177">Firewall blocking</strong> — use <code data-id="1178">rpcinfo -p</code> and <code data-id="1179">ss -tlnp</code> to diagnose</li>
+        <li data-id="1180"><strong data-id="1181">Service not running</strong> — start <code data-id="1182">nfs-server</code> and check with <code data-id="1183">systemctl status</code></li>
+      </ol>
+      <div data-id="1184" class="verification">Each scenario resolved with appropriate diagnostic commands.</div>
+    </div>
+
+    <div data-id="1185" class="lab-card" id="lab-72">
+      <h3 data-id="1186">Lab 72: Troubleshoot CIFS Mount Failures</h3>
+      <p data-id="1187" class="objective">Diagnose CIFS/SMB issues.</p>
+      <ol data-id="1188" class="task-list">
+        <li data-id="1189"><strong data-id="1190">Wrong credentials</strong> — "Permission denied" error, verify username/password</li>
+        <li data-id="1191"><strong data-id="1192">Wrong share name</strong> — use <code data-id="1193">smbclient -L server</code> to list available shares</li>
+        <li data-id="1194"><strong data-id="1195">SMB version mismatch</strong> — check <code data-id="1196">dmesg</code>, add <code data-id="1197">vers=3.0</code> to mount options</li>
+      </ol>
+      <div data-id="1198" class="verification">Each issue diagnosed and fixed systematically.</div>
+    </div>
+
+    <!-- ===== SECTION 5: Swap Space (Labs 73-82) ===== -->
+    <div data-id="1199" class="section-title-bar" id="section-5-header">
+      <h2 data-id="1200">Section 5: Configure and Manage Swap Space</h2>
+      <p data-id="1201">Labs 73–82 · Swap partitions, swap files, LVM swap, priorities, encryption, troubleshooting</p>
+    </div>
+
+    <div data-id="1202" class="lab-card" id="lab-73">
+      <h3 data-id="1203">Lab 73: Check Current Swap Configuration</h3>
+      <p data-id="1204" class="objective">Identify active swap sources.</p>
+      <ol data-id="1205" class="task-list">
+        <li data-id="1206">Show swap details: <code data-id="1207">swapon --show</code></li>
+        <li data-id="1208">Check memory: <code data-id="1209">free -h</code></li>
+        <li data-id="1210">Kernel view: <code data-id="1211">cat /proc/swaps</code></li>
+      </ol>
+      <div data-id="1212" class="verification">All three commands agree on total swap size and sources.</div>
+    </div>
+
+    <div data-id="1213" class="lab-card" id="lab-74">
+      <h3 data-id="1214">Lab 74: Create Swap Partition</h3>
+      <p data-id="1215" class="objective">Create and activate swap partition.</p>
+      <ol data-id="1216" class="task-list">
+        <li data-id="1217">Create partition with <code data-id="1218">fdisk</code>, set type <code data-id="1219">82</code> (Linux swap)</li>
+        <li data-id="1220">Initialize: <code data-id="1221">mkswap /dev/sde1</code></li>
+        <li data-id="1222">Activate: <code data-id="1223">swapon /dev/sde1</code></li>
+      </ol>
+      <div data-id="1224" class="verification"><code data-id="1225">swapon --show</code> lists it. <code data-id="1226">free -h</code> shows increased swap.</div>
+    </div>
+
+    <div data-id="1227" class="lab-card" id="lab-75">
+      <h3 data-id="1228">Lab 75: Create Swap File</h3>
+      <p data-id="1229" class="objective">Create swap file alternative to partition.</p>
+      <ol data-id="1230" class="task-list">
+        <li data-id="1231">Create: <code data-id="1232">dd if=/dev/zero of=/swapfile bs=1M count=512</code></li>
+        <li data-id="1233">Set permissions: <code data-id="1234">chmod 600 /swapfile</code></li>
+        <li data-id="1235">Initialize: <code data-id="1236">mkswap /swapfile</code></li>
+        <li data-id="1237">Activate: <code data-id="1238">swapon /swapfile</code></li>
+        <li data-id="1239">Add to fstab: <code data-id="1240">/swapfile none swap sw 0 0</code></li>
+      </ol>
+      <div data-id="1241" class="verification"><code data-id="1242">swapon --show</code> lists swap file. Persists after reboot.</div>
+      <div data-id="1243" class="callout note">Use <code data-id="1244">dd</code>, not <code data-id="1245">fallocate</code>, for swap files on older kernels. <code data-id="1246">dd</code> is the safer approach.</div>
+    </div>
+
+    <div data-id="1247" class="lab-card" id="lab-76">
+      <h3 data-id="1248">Lab 76: Remove Swap Space</h3>
+      <p data-id="1249" class="objective">Safely remove swap sources.</p>
+      <ol data-id="1250" class="task-list">
+        <li data-id="1251">Deactivate: <code data-id="1252">swapoff /swapfile</code></li>
+        <li data-id="1253">Remove fstab entry</li>
+        <li data-id="1254">Delete file: <code data-id="1255">rm /swapfile</code></li>
+        <li data-id="1256">Deactivate partition: <code data-id="1257">swapoff /dev/sde1</code></li>
+      </ol>
+      <div data-id="1258" class="verification"><code data-id="1259">swapon --show</code> no longer lists removed sources.</div>
+    </div>
+
+    <div data-id="1260" class="lab-card" id="lab-77">
+      <h3 data-id="1261">Lab 77: Set Swap Priority</h3>
+      <p data-id="1262" class="objective">Configure multiple swap sources with priorities.</p>
+      <ol data-id="1263" class="task-list">
+        <li data-id="1264">Create two swap sources (file + partition)</li>
+        <li data-id="1265">Activate with priorities: <code data-id="1266">swapon -p 10 /dev/sde1</code> and <code data-id="1267">swapon -p 5 /swapfile</code></li>
+        <li data-id="1268">Or use <code data-id="1269">pri=</code> in fstab entries</li>
+      </ol>
+      <div data-id="1270" class="verification"><code data-id="1271">swapon --show</code> displays priorities. Highest priority is used first. Equal priority = round-robin.</div>
+    </div>
+
+    <div data-id="1272" class="lab-card" id="lab-78">
+      <h3 data-id="1273">Lab 78: Create Swap on LVM</h3>
+      <p data-id="1274" class="objective">Dedicated LVM LV for swap.</p>
+      <ol data-id="1275" class="task-list">
+        <li data-id="1276">Create LV: <code data-id="1277">lvcreate -n lv_swap -L 1G vg_storage</code></li>
+        <li data-id="1278">Initialize: <code data-id="1279">mkswap /dev/vg_storage/lv_swap</code></li>
+        <li data-id="1280">Activate: <code data-id="1281">swapon /dev/vg_storage/lv_swap</code></li>
+        <li data-id="1282">Add to fstab</li>
+      </ol>
+      <div data-id="1283" class="verification"><code data-id="1284">swapon --show</code> lists LVM swap. <code data-id="1285">lvs</code> shows swap LV.</div>
+    </div>
+
+    <div data-id="1286" class="lab-card" id="lab-79">
+      <h3 data-id="1287">Lab 79: Resize Swap on LVM</h3>
+      <p data-id="1288" class="objective">Resize LVM swap volume.</p>
+      <ol data-id="1289" class="task-list">
+        <li data-id="1290">Deactivate: <code data-id="1291">swapoff /dev/vg_storage/lv_swap</code></li>
+        <li data-id="1292">Extend: <code data-id="1293">lvextend -L +512M /dev/vg_storage/lv_swap</code></li>
+        <li data-id="1294">Re-initialize: <code data-id="1295">mkswap /dev/vg_storage/lv_swap</code></li>
+        <li data-id="1296">Activate: <code data-id="1297">swapon /dev/vg_storage/lv_swap</code></li>
+      </ol>
+      <div data-id="1298" class="verification"><code data-id="1299">swapon --show</code> shows new 1.5 GB size.</div>
+      <div data-id="1300" class="callout important">You must run <code data-id="1301">mkswap</code> again after resizing a swap LV. This is a frequently missed step.</div>
+    </div>
+
+    <div data-id="1302" class="lab-card" id="lab-80">
+      <h3 data-id="1303">Lab 80: Tune Swappiness</h3>
+      <p data-id="1304" class="objective">Adjust kernel swappiness parameter.</p>
+      <ol data-id="1305" class="task-list">
+        <li data-id="1306">Read current: <code data-id="1307">cat /proc/sys/vm/swappiness</code> (default 60)</li>
+        <li data-id="1308">Set live: <code data-id="1309">sysctl vm.swappiness=10</code></li>
+        <li data-id="1310">Make persistent: add to <code data-id="1311">/etc/sysctl.d/99-swap.conf</code></li>
+        <li data-id="1312">Apply: <code data-id="1313">sysctl -p /etc/sysctl.d/99-swap.conf</code></li>
+      </ol>
+      <div data-id="1314" class="verification"><code data-id="1315">sysctl vm.swappiness</code> returns 10.</div>
+      <div data-id="1316" class="callout note">0 = avoid swapping except under extreme pressure. 100 = aggressive swapping. Servers: 10–30. Desktop: default 60.</div>
+    </div>
+
+    <div data-id="1317" class="lab-card" id="lab-81">
+      <h3 data-id="1318">Lab 81: Encrypted Swap</h3>
+      <p data-id="1319" class="objective">Configure encrypted swap with dm-crypt random key.</p>
+      <ol data-id="1320" class="task-list">
+        <li data-id="1321">Install: <code data-id="1322">apt install cryptsetup</code></li>
+        <li data-id="1323">Add <code data-id="1324">/etc/crypttab</code> entry: <code data-id="1325">crypt_swap /dev/sde1 /dev/urandom swap</code></li>
+        <li data-id="1326">Update fstab: <code data-id="1327">/dev/mapper/crypt_swap none swap sw 0 0</code></li>
+        <li data-id="1328">Reboot to activate</li>
+      </ol>
+      <div data-id="1329" class="verification"><code data-id="1330">swapon --show</code> shows dm device. <code data-id="1331">cryptsetup status crypt_swap</code> confirms encryption.</div>
+      <div data-id="1332" class="callout note"><code data-id="1333">/dev/urandom</code> key = new random key each boot. Swap is unrecoverable after reboot. Do not use for hibernate.</div>
+    </div>
+
+    <div data-id="1334" class="lab-card" id="lab-82">
+      <h3 data-id="1335">Lab 82: Swap Troubleshooting Scenarios</h3>
+      <p data-id="1336" class="objective">Diagnose common swap problems.</p>
+      <ol data-id="1337" class="task-list">
+        <li data-id="1338"><strong data-id="1339">Swap not activating</strong>: check fstab syntax, verify UUID with <code data-id="1340">blkid</code>, check <code data-id="1341">journalctl -b</code></li>
+        <li data-id="1342"><strong data-id="1343">Wrong UUID</strong>: update fstab with correct UUID from <code data-id="1344">blkid</code></li>
+        <li data-id="1345"><strong data-id="1346">Full swap + OOM</strong>: <code data-id="1347">free -h</code>, <code data-id="1348">dmesg | grep oom</code>, find memory-hungry processes with <code data-id="1349">top</code></li>
+      </ol>
+      <div data-id="1350" class="verification">Each scenario resolved systematically.</div>
+    </div>
+
+    <!-- ===== SECTION 6: Automounters (Labs 83-92) ===== -->
+    <div data-id="1351" class="section-title-bar" id="section-6-header">
+      <h2 data-id="1352">Section 6: Configure Filesystem Automounters</h2>
+      <p data-id="1353">Labs 83–92 · autofs direct/indirect maps, NFS/CIFS automount, wildcards, systemd automount</p>
+    </div>
+
+    <div data-id="1354" class="lab-card" id="lab-83">
+      <h3 data-id="1355">Lab 83: Install and Enable autofs</h3>
+      <p data-id="1356" class="objective">Install and understand autofs structure.</p>
+      <ol data-id="1357" class="task-list">
+        <li data-id="1358">Install: <code data-id="1359">apt install autofs</code></li>
+        <li data-id="1360">Examine master map: <code data-id="1361">cat /etc/auto.master</code></li>
+        <li data-id="1362">Understand hierarchy: master map → map files → mount entries</li>
+        <li data-id="1363">Enable: <code data-id="1364">systemctl enable --now autofs</code></li>
+      </ol>
+      <div data-id="1365" class="verification"><code data-id="1366">systemctl status autofs</code> shows active.</div>
+    </div>
+
+    <div data-id="1367" class="lab-card" id="lab-84">
+      <h3 data-id="1368">Lab 84: Configure Direct Autofs Map</h3>
+      <p data-id="1369" class="objective">Direct map mounting at a specific absolute path.</p>
+      <ol data-id="1370" class="task-list">
+        <li data-id="1371">Add to <code data-id="1372">/etc/auto.master</code>: <code data-id="1373">/- /etc/auto.direct</code></li>
+        <li data-id="1374">Create <code data-id="1375">/etc/auto.direct</code>: <code data-id="1376">/mnt/data -fstype=ext4 :/dev/sdb1</code></li>
+        <li data-id="1377">Restart: <code data-id="1378">systemctl restart autofs</code></li>
+        <li data-id="1379">Access: <code data-id="1380">ls /mnt/data</code> triggers mount</li>
+      </ol>
+      <div data-id="1381" class="verification"><code data-id="1382">mount</code> shows filesystem after access. Unmounts after default timeout.</div>
+    </div>
+
+    <div data-id="1383" class="lab-card" id="lab-85">
+      <h3 data-id="1384">Lab 85: Configure Indirect Autofs Map</h3>
+      <p data-id="1385" class="objective">Indirect map with multiple submountpoints.</p>
+      <ol data-id="1386" class="task-list">
+        <li data-id="1387">Add to <code data-id="1388">/etc/auto.master</code>: <code data-id="1389">/mnt/shares /etc/auto.shares</code></li>
+        <li data-id="1390">Create <code data-id="1391">/etc/auto.shares</code> with projects and archive entries</li>
+        <li data-id="1392">Restart: <code data-id="1393">systemctl restart autofs</code></li>
+        <li data-id="1394">Access: <code data-id="1395">ls /mnt/shares/projects</code></li>
+      </ol>
+      <div data-id="1396" class="verification">Both submountpoints mount on demand.</div>
+    </div>
+
+    <div data-id="1397" class="lab-card" id="lab-86">
+      <h3 data-id="1398">Lab 86: Autofs with NFS Shares</h3>
+      <p data-id="1399" class="objective">Automount NFS exports.</p>
+      <ol data-id="1400" class="task-list">
+        <li data-id="1401">Add to <code data-id="1402">/etc/auto.master</code>: <code data-id="1403">/mnt/nfs /etc/auto.nfs</code></li>
+        <li data-id="1404">Create <code data-id="1405">/etc/auto.nfs</code>: <code data-id="1406">shared -fstype=nfs4,rw server:/export</code></li>
+        <li data-id="1407">Restart: <code data-id="1408">systemctl restart autofs</code></li>
+        <li data-id="1409">Access: <code data-id="1410">ls /mnt/nfs/shared</code></li>
+      </ol>
+      <div data-id="1411" class="verification">NFS mounts on access, unmounts after timeout.</div>
+    </div>
+
+    <div data-id="1412" class="lab-card" id="lab-87">
+      <h3 data-id="1413">Lab 87: Autofs with CIFS Shares</h3>
+      <p data-id="1414" class="objective">Automount CIFS/Samba shares.</p>
+      <ol data-id="1415" class="task-list">
+        <li data-id="1416">Create <code data-id="1417">/etc/auto.cifs</code> with credentials file reference</li>
+        <li data-id="1418">Add to <code data-id="1419">/etc/auto.master</code></li>
+        <li data-id="1420">Restart: <code data-id="1421">systemctl restart autofs</code></li>
+        <li data-id="1422">Access: <code data-id="1423">ls /mnt/cifs/samba</code></li>
+      </ol>
+      <div data-id="1424" class="verification">CIFS mounts on access. Credentials not exposed.</div>
+    </div>
+
+    <div data-id="1425" class="lab-card" id="lab-88">
+      <h3 data-id="1426">Lab 88: Autofs Wildcard Maps</h3>
+      <p data-id="1427" class="objective">Dynamic NFS home directory mounting with wildcard.</p>
+      <ol data-id="1428" class="task-list">
+        <li data-id="1429">Export <code data-id="1430">/export/home</code> on NFS server</li>
+        <li data-id="1431">Create <code data-id="1432">/etc/auto.home</code>: <code data-id="1433">* -fstype=nfs4,rw server:/export/home/&</code></li>
+        <li data-id="1434">Add to auto.master: <code data-id="1435">/home/remote /etc/auto.home</code></li>
+        <li data-id="1436">Test: <code data-id="1437">ls /home/remote/alice</code></li>
+      </ol>
+      <div data-id="1438" class="verification">Any username auto-mounts matching export. <code data-id="1439">*</code> matches the key name, <code data-id="1440">&</code> substitutes it.</div>
+    </div>
+
+    <div data-id="1441" class="lab-card" id="lab-89">
+      <h3 data-id="1442">Lab 89: Autofs with Executable Maps</h3>
+      <p data-id="1443" class="objective">Use a script as a dynamic map source.</p>
+      <ol data-id="1444" class="task-list">
+        <li data-id="1445">Create executable script <code data-id="1446">/etc/auto.dynamic</code></li>
+        <li data-id="1447">Script receives key as argument, outputs mount options</li>
+        <li data-id="1448">Add to <code data-id="1449">/etc/auto.master</code></li>
+        <li data-id="1450">Access triggers script execution</li>
+      </ol>
+      <div data-id="1451" class="verification">Script is called dynamically for programmatic mount decisions.</div>
+    </div>
+
+    <div data-id="1452" class="lab-card" id="lab-90">
+      <h3 data-id="1453">Lab 90: Autofs Timeout and Troubleshooting</h3>
+      <p data-id="1454" class="objective">Custom timeout and debugging.</p>
+      <ol data-id="1455" class="task-list">
+        <li data-id="1456">Set custom timeout in auto.master: <code data-id="1457">--timeout=60</code></li>
+        <li data-id="1458">Verify mount unmounts after 60 seconds of inactivity</li>
+        <li data-id="1459">Debug: <code data-id="1460">automount -f -v</code> (foreground, verbose)</li>
+        <li data-id="1461">Introduce an error and observe debug output</li>
+      </ol>
+      <div data-id="1462" class="verification">Custom timeout respected. Verbose mode reveals root cause of errors.</div>
+    </div>
+
+    <div data-id="1463" class="lab-card" id="lab-91">
+      <h3 data-id="1464">Lab 91: systemd automount Units</h3>
+      <p data-id="1465" class="objective">Create .automount unit as systemd alternative to autofs.</p>
+      <ol data-id="1466" class="task-list">
+        <li data-id="1467">Create <code data-id="1468">/etc/systemd/system/mnt-auto.mount</code></li>
+        <li data-id="1469">Create <code data-id="1470">/etc/systemd/system/mnt-auto.automount</code> with <code data-id="1471">TimeoutIdleSec=120</code></li>
+        <li data-id="1472">Reload: <code data-id="1473">systemctl daemon-reload</code></li>
+        <li data-id="1474">Enable: <code data-id="1475">systemctl enable --now mnt-auto.automount</code></li>
+        <li data-id="1476">Access <code data-id="1477">/mnt/auto</code> to trigger mount</li>
+      </ol>
+      <div data-id="1478" class="verification">Status shows "waiting" before access, "running" after. Idle unmount after 120s.</div>
+    </div>
+
+    <div data-id="1479" class="lab-card" id="lab-92">
+      <h3 data-id="1480">Lab 92: Automounter Comprehensive Lab</h3>
+      <p data-id="1481" class="objective">Complete multi-type automounter setup.</p>
+      <ol data-id="1482" class="task-list">
+        <li data-id="1483">Direct mount for local LV</li>
+        <li data-id="1484">Indirect NFS with 3 exports</li>
+        <li data-id="1485">Wildcard map for home directories</li>
+        <li data-id="1486">Set 120-second timeout for all maps</li>
+        <li data-id="1487">Test all mounts with <code data-id="1488">ls</code> access</li>
+      </ol>
+      <div data-id="1489" class="verification">All mount on access, unmount after timeout period.</div>
+    </div>
+
+    <!-- ===== SECTION 7: Performance (Labs 93-100) ===== -->
+    <div data-id="1490" class="section-title-bar" id="section-7-header">
+      <h2 data-id="1491">Section 7: Monitor Storage Performance</h2>
+      <p data-id="1492">Labs 93–100 · iostat, iotop, vmstat, sar, blktrace, fio, dd, comprehensive analysis</p>
+    </div>
+
+    <div data-id="1493" class="lab-card" id="lab-93">
+      <h3 data-id="1494">Lab 93: Monitor with iostat</h3>
+      <p data-id="1495" class="objective">Monitor disk I/O statistics.</p>
+      <ol data-id="1496" class="task-list">
+        <li data-id="1497">Install: <code data-id="1498">apt install sysstat</code></li>
+        <li data-id="1499">Basic view: <code data-id="1500">iostat</code></li>
+        <li data-id="1501">Extended with interval: <code data-id="1502">iostat -x 1 5</code></li>
+        <li data-id="1503">Generate load: <code data-id="1504">dd if=/dev/zero of=/tmp/test bs=1M count=500</code></li>
+        <li data-id="1505">Observe metrics during load</li>
+      </ol>
+      <div data-id="1506" class="overflow-x-auto mt-3">
+        <table data-id="1507" class="ref-table">
+          <thead data-id="1508"><tr data-id="1509"><th data-id="1510">Metric</th><th data-id="1511">Concern Threshold</th><th data-id="1512">Meaning</th></tr></thead>
+          <tbody data-id="1513">
+            <tr data-id="1514"><td data-id="1515"><code data-id="1516">%util</code></td><td data-id="1517">&gt;80%</td><td data-id="1518">Device saturation</td></tr>
+            <tr data-id="1519"><td data-id="1520"><code data-id="1521">await</code></td><td data-id="1522">&gt;20ms SSD, &gt;50ms HDD</td><td data-id="1523">Average I/O wait time</td></tr>
+            <tr data-id="1524"><td data-id="1525"><code data-id="1526">r/s, w/s</code></td><td data-id="1527">Varies</td><td data-id="1528">Read/write operations per second</td></tr>
+            <tr data-id="1529"><td data-id="1530"><code data-id="1531">avgqu-sz</code></td><td data-id="1532">&gt;2</td><td data-id="1533">Queue depth — saturation indicator</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div data-id="1534" class="verification">Identify device under load. <code data-id="1535">%util</code> spikes during <code data-id="1536">dd</code>.</div>
+    </div>
+
+    <div data-id="1537" class="lab-card" id="lab-94">
+      <h3 data-id="1538">Lab 94: Monitor with iotop</h3>
+      <p data-id="1539" class="objective">Identify processes consuming most I/O.</p>
+      <ol data-id="1540" class="task-list">
+        <li data-id="1541">Install: <code data-id="1542">apt install iotop</code></li>
+        <li data-id="1543">Run: <code data-id="1544">iotop</code></li>
+        <li data-id="1545">Active-only view: <code data-id="1546">iotop -oP</code></li>
+        <li data-id="1547">Generate load and observe</li>
+      </ol>
+      <div data-id="1548" class="verification"><code data-id="1549">dd</code> process appears at top of I/O list.</div>
+    </div>
+
+    <div data-id="1550" class="lab-card" id="lab-95">
+      <h3 data-id="1551">Lab 95: Monitor with vmstat</h3>
+      <p data-id="1552" class="objective">System-wide I/O and memory statistics.</p>
+      <ol data-id="1553" class="task-list">
+        <li data-id="1554">Run: <code data-id="1555">vmstat 1 10</code></li>
+        <li data-id="1556">Identify key columns: <code data-id="1557">si</code> (swap in), <code data-id="1558">so</code> (swap out), <code data-id="1559">bi</code> (blocks in), <code data-id="1560">bo</code> (blocks out)</li>
+        <li data-id="1561">Generate disk and swap activity, observe changes</li>
+      </ol>
+      <div data-id="1562" class="verification"><code data-id="1563">bi/bo</code> spike during disk ops. <code data-id="1564">si/so</code> show swap activity.</div>
+    </div>
+
+    <div data-id="1565" class="lab-card" id="lab-96">
+      <h3 data-id="1566">Lab 96: Monitor with sar</h3>
+      <p data-id="1567" class="objective">Historical and real-time monitoring with sar.</p>
+      <ol data-id="1568" class="task-list">
+        <li data-id="1569">Enable sysstat collection in <code data-id="1570">/etc/default/sysstat</code></li>
+        <li data-id="1571">Disk activity: <code data-id="1572">sar -d 1 5</code></li>
+        <li data-id="1573">I/O transfer rates: <code data-id="1574">sar -b 1 5</code></li>
+        <li data-id="1575">View historical data from <code data-id="1576">/var/log/sysstat/</code></li>
+      </ol>
+      <div data-id="1577" class="verification"><code data-id="1578">sar -d</code> shows per-device stats. Historical data is available.</div>
+    </div>
+
+    <div data-id="1579" class="lab-card" id="lab-97">
+      <h3 data-id="1580">Lab 97: Monitor with blktrace and blkparse</h3>
+      <p data-id="1581" class="objective">Deep I/O tracing at the block layer.</p>
+      <ol data-id="1582" class="task-list">
+        <li data-id="1583">Install: <code data-id="1584">apt install blktrace</code></li>
+        <li data-id="1585">Start trace: <code data-id="1586">blktrace -d /dev/sdb -o trace &</code></li>
+        <li data-id="1587">Generate I/O activity</li>
+        <li data-id="1588">Stop tracing (kill blktrace)</li>
+        <li data-id="1589">Parse: <code data-id="1590">blkparse -i trace</code></li>
+        <li data-id="1591">Review detailed I/O events with timestamps</li>
+      </ol>
+      <div data-id="1592" class="verification">Trace output shows detailed I/O events with timestamps and operation types.</div>
+    </div>
+
+    <div data-id="1593" class="lab-card" id="lab-98">
+      <h3 data-id="1594">Lab 98: Benchmark with fio</h3>
+      <p data-id="1595" class="objective">Structured storage benchmarks with fio.</p>
+      <ol data-id="1596" class="task-list">
+        <li data-id="1597">Install: <code data-id="1598">apt install fio</code></li>
+        <li data-id="1599">Sequential read: <code data-id="1600">fio --name=seqread --rw=read --bs=1M --size=500M --numjobs=1</code></li>
+        <li data-id="1601">Sequential write: <code data-id="1602">fio --name=seqwrite --rw=write --bs=1M --size=500M</code></li>
+        <li data-id="1603">Random read: <code data-id="1604">fio --name=randread --rw=randread --bs=4k --size=500M</code></li>
+        <li data-id="1605">Random write: <code data-id="1606">fio --name=randwrite --rw=randwrite --bs=4k --size=500M</code></li>
+      </ol>
+      <div data-id="1607" class="overflow-x-auto mt-3">
+        <table data-id="1608" class="ref-table">
+          <thead data-id="1609"><tr data-id="1610"><th data-id="1611">Metric</th><th data-id="1612">Description</th></tr></thead>
+          <tbody data-id="1613">
+            <tr data-id="1614"><td data-id="1615"><code data-id="1616">IOPS</code></td><td data-id="1617">I/O operations per second</td></tr>
+            <tr data-id="1618"><td data-id="1619"><code data-id="1620">BW</code></td><td data-id="1621">Bandwidth (throughput)</td></tr>
+            <tr data-id="1622"><td data-id="1623"><code data-id="1624">lat</code></td><td data-id="1625">Latency (avg, p99, max)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div data-id="1626" class="verification">Sequential operations are faster than random. Compare ext4 vs XFS results.</div>
+    </div>
+
+    <div data-id="1627" class="lab-card" id="lab-99">
+      <h3 data-id="1628">Lab 99: Benchmark with dd</h3>
+      <p data-id="1629" class="objective">Quick speed measurements with dd.</p>
+      <ol data-id="1630" class="task-list">
+        <li data-id="1631">Write test: <code data-id="1632">dd if=/dev/zero of=testfile bs=1M count=1024 conv=fdatasync</code></li>
+        <li data-id="1633">Clear cache: <code data-id="1634">echo 3 > /proc/sys/vm/drop_caches</code></li>
+        <li data-id="1635">Read test: <code data-id="1636">dd if=testfile of=/dev/null bs=1M</code></li>
+        <li data-id="1637">Cleanup: <code data-id="1638">rm testfile</code></li>
+      </ol>
+      <div data-id="1639" class="verification"><code data-id="1640">dd</code> reports transfer rate in MB/s.</div>
+      <div data-id="1641" class="callout note"><code data-id="1642">conv=fdatasync</code> forces physical write. <code data-id="1643">oflag=direct</code> bypasses page cache. Always clear caches between tests.</div>
+    </div>
+
+    <div data-id="1644" class="lab-card" id="lab-100">
+      <h3 data-id="1645">Lab 100: Comprehensive Storage Performance Analysis</h3>
+      <p data-id="1646" class="objective">Full analysis using multiple tools simultaneously.</p>
+      <ol data-id="1647" class="task-list">
+        <li data-id="1648">Terminal 1: <code data-id="1649">iostat -x 1</code></li>
+        <li data-id="1650">Terminal 2: <code data-id="1651">iotop -oP</code></li>
+        <li data-id="1652">Terminal 3: <code data-id="1653">vmstat 1</code></li>
+        <li data-id="1654">Terminal 4: <code data-id="1655">fio --name=mixed --rw=randrw --rwmixread=70 --bs=4k --runtime=60 --time_based</code></li>
+        <li data-id="1656">Collect <code data-id="1657">sar -d</code> data during test</li>
+        <li data-id="1658">Analyze: highest <code data-id="1659">%util</code>, top I/O processes, swap activity, IOPS/latency</li>
+        <li data-id="1660">Write performance report with findings and recommendations</li>
+      </ol>
+      <div data-id="1661" class="verification">Correlate metrics across all tools. Report includes workload type, IOPS, throughput, latency, utilization, and optimization recommendations.</div>
+      <div data-id="1662" class="callout tip">Practice interpreting multiple tools together. The exam may require identifying a storage bottleneck with limited time.</div>
+    </div>
+
+    <!-- ===== APPENDIX A ===== -->
+    <div data-id="1663" class="section-title-bar" id="appendix-a" style="margin-top:48px;">
+      <h2 data-id="1664">Appendix A: Quick Command Reference</h2>
+      <p data-id="1665">Essential commands organized by category</p>
+    </div>
+
+    <div data-id="1666" class="lab-card">
+      <h3 data-id="1667">LVM Commands</h3>
+      <div data-id="1668" class="overflow-x-auto">
+        <table data-id="1669" class="ref-table">
+          <thead data-id="1670"><tr data-id="1671"><th data-id="1672">Command</th><th data-id="1673">Purpose</th></tr></thead>
+          <tbody data-id="1674">
+            <tr data-id="1675"><td data-id="1676"><code data-id="1677">pvcreate</code></td><td data-id="1678">Initialize disk/partition as LVM physical volume</td></tr>
+            <tr data-id="1679"><td data-id="1680"><code data-id="1681">pvs</code> / <code data-id="1682">pvdisplay</code></td><td data-id="1683">List / show detail of physical volumes</td></tr>
+            <tr data-id="1684"><td data-id="1685"><code data-id="1686">pvmove</code></td><td data-id="1687">Migrate data from one PV to another</td></tr>
+            <tr data-id="1688"><td data-id="1689"><code data-id="1690">pvremove</code></td><td data-id="1691">Remove PV label from device</td></tr>
+            <tr data-id="1692"><td data-id="1693"><code data-id="1694">vgcreate</code></td><td data-id="1695">Create a volume group from PVs</td></tr>
+            <tr data-id="1696"><td data-id="1697"><code data-id="1698">vgextend</code> / <code data-id="1699">vgreduce</code></td><td data-id="1700">Add / remove PVs from a VG</td></tr>
+            <tr data-id="1701"><td data-id="1702"><code data-id="1703">vgrename</code></td><td data-id="1704">Rename a volume group</td></tr>
+            <tr data-id="1705"><td data-id="1706"><code data-id="1707">vgremove</code></td><td data-id="1708">Delete a volume group</td></tr>
+            <tr data-id="1709"><td data-id="1710"><code data-id="1711">lvcreate</code></td><td data-id="1712">Create a logical volume (-L size, -l extents/%)</td></tr>
+            <tr data-id="1713"><td data-id="1714"><code data-id="1715">lvextend -r</code></td><td data-id="1716">Extend LV and resize filesystem in one step</td></tr>
+            <tr data-id="1717"><td data-id="1718"><code data-id="1719">lvreduce</code></td><td data-id="1720">Reduce LV size (ext4 only; shrink FS first!)</td></tr>
+            <tr data-id="1721"><td data-id="1722"><code data-id="1723">lvremove</code></td><td data-id="1724">Delete a logical volume (unmount first)</td></tr>
+            <tr data-id="1725"><td data-id="1726"><code data-id="1727">lvrename</code></td><td data-id="1728">Rename a logical volume</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div data-id="1729" class="lab-card">
+      <h3 data-id="1730">Filesystem Commands</h3>
+      <div data-id="1731" class="overflow-x-auto">
+        <table data-id="1732" class="ref-table">
+          <thead data-id="1733"><tr data-id="1734"><th data-id="1735">Command</th><th data-id="1736">Purpose</th></tr></thead>
+          <tbody data-id="1737">
+            <tr data-id="1738"><td data-id="1739"><code data-id="1740">mkfs.ext4</code> / <code data-id="1741">mkfs.xfs</code></td><td data-id="1742">Create ext4 / XFS filesystem</td></tr>
+            <tr data-id="1743"><td data-id="1744"><code data-id="1745">resize2fs</code></td><td data-id="1746">Resize ext4 filesystem (grow or shrink)</td></tr>
+            <tr data-id="1747"><td data-id="1748"><code data-id="1749">xfs_growfs</code></td><td data-id="1750">Grow XFS filesystem (mount point, not device)</td></tr>
+            <tr data-id="1751"><td data-id="1752"><code data-id="1753">e2fsck -f</code></td><td data-id="1754">Force check ext4 filesystem</td></tr>
+            <tr data-id="1755"><td data-id="1756"><code data-id="1757">xfs_repair</code></td><td data-id="1758">Repair XFS filesystem</td></tr>
+            <tr data-id="1759"><td data-id="1760"><code data-id="1761">tune2fs -l</code></td><td data-id="1762">List ext4 superblock info</td></tr>
+            <tr data-id="1763"><td data-id="1764"><code data-id="1765">xfs_info</code></td><td data-id="1766">Display XFS filesystem geometry</td></tr>
+            <tr data-id="1767"><td data-id="1768"><code data-id="1769">blkid</code></td><td data-id="1770">Show UUIDs, labels, and filesystem types</td></tr>
+            <tr data-id="1771"><td data-id="1772"><code data-id="1773">lsblk -f</code></td><td data-id="1774">List block devices with filesystem info</td></tr>
+            <tr data-id="1775"><td data-id="1776"><code data-id="1777">findmnt</code></td><td data-id="1778">Tree view of all mounts (--verify to validate fstab)</td></tr>
+            <tr data-id="1779"><td data-id="1780"><code data-id="1781">mount</code> / <code data-id="1782">umount</code></td><td data-id="1783">Mount / unmount filesystems</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div data-id="1784" class="lab-card">
+      <h3 data-id="1785">NFS, CIFS, and iSCSI Commands</h3>
+      <div data-id="1786" class="overflow-x-auto">
+        <table data-id="1787" class="ref-table">
+          <thead data-id="1788"><tr data-id="1789"><th data-id="1790">Command</th><th data-id="1791">Purpose</th></tr></thead>
+          <tbody data-id="1792">
+            <tr data-id="1793"><td data-id="1794"><code data-id="1795">exportfs -ra</code></td><td data-id="1796">Re-export all NFS shares</td></tr>
+            <tr data-id="1797"><td data-id="1798"><code data-id="1799">showmount -e</code></td><td data-id="1800">List NFS exports from server</td></tr>
+            <tr data-id="1801"><td data-id="1802"><code data-id="1803">rpcinfo -p</code></td><td data-id="1804">Show registered RPC services (NFS debugging)</td></tr>
+            <tr data-id="1805"><td data-id="1806"><code data-id="1807">smbclient -L</code></td><td data-id="1808">List available Samba/CIFS shares</td></tr>
+            <tr data-id="1809"><td data-id="1810"><code data-id="1811">testparm</code></td><td data-id="1812">Validate smb.conf syntax</td></tr>
+            <tr data-id="1813"><td data-id="1814"><code data-id="1815">smbpasswd -a</code></td><td data-id="1816">Add Samba user</td></tr>
+            <tr data-id="1817"><td data-id="1818"><code data-id="1819">iscsiadm -m discovery</code></td><td data-id="1820">Discover iSCSI targets</td></tr>
+            <tr data-id="1821"><td data-id="1822"><code data-id="1823">iscsiadm -m node --login</code></td><td data-id="1824">Login to iSCSI target</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div data-id="1825" class="lab-card">
+      <h3 data-id="1826">Swap Commands</h3>
+      <div data-id="1827" class="overflow-x-auto">
+        <table data-id="1828" class="ref-table">
+          <thead data-id="1829"><tr data-id="1830"><th data-id="1831">Command</th><th data-id="1832">Purpose</th></tr></thead>
+          <tbody data-id="1833">
+            <tr data-id="1834"><td data-id="1835"><code data-id="1836">mkswap</code></td><td data-id="1837">Initialize swap area</td></tr>
+            <tr data-id="1838"><td data-id="1839"><code data-id="1840">swapon</code></td><td data-id="1841">Activate swap space</td></tr>
+            <tr data-id="1842"><td data-id="1843"><code data-id="1844">swapoff</code></td><td data-id="1845">Deactivate swap space</td></tr>
+            <tr data-id="1846"><td data-id="1847"><code data-id="1848">swapon --show</code></td><td data-id="1849">Display active swap sources with details</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div data-id="1850" class="lab-card">
+      <h3 data-id="1851">Autofs & Performance Commands</h3>
+      <div data-id="1852" class="overflow-x-auto">
+        <table data-id="1853" class="ref-table">
+          <thead data-id="1854"><tr data-id="1855"><th data-id="1856">Command</th><th data-id="1857">Purpose</th></tr></thead>
+          <tbody data-id="1858">
+            <tr data-id="1859"><td data-id="1860"><code data-id="1861">automount -f -v</code></td><td data-id="1862">Run autofs foreground verbose (debug)</td></tr>
+            <tr data-id="1863"><td data-id="1864"><code data-id="1865">/etc/auto.master</code></td><td data-id="1866">Master map file for autofs</td></tr>
+            <tr data-id="1867"><td data-id="1868"><code data-id="1869">systemctl restart autofs</code></td><td data-id="1870">Apply autofs configuration changes</td></tr>
+            <tr data-id="1871"><td data-id="1872"><code data-id="1873">iostat -x 1</code></td><td data-id="1874">Extended disk I/O stats every 1 second</td></tr>
+            <tr data-id="1875"><td data-id="1876"><code data-id="1877">iotop -oP</code></td><td data-id="1878">Show only active I/O processes</td></tr>
+            <tr data-id="1879"><td data-id="1880"><code data-id="1881">vmstat 1</code></td><td data-id="1882">System-wide stats (memory, swap, I/O)</td></tr>
+            <tr data-id="1883"><td data-id="1884"><code data-id="1885">sar -d 1 5</code></td><td data-id="1886">Disk activity for 5 samples</td></tr>
+            <tr data-id="1887"><td data-id="1888"><code data-id="1889">fio</code></td><td data-id="1890">Flexible I/O tester for benchmarks</td></tr>
+            <tr data-id="1891"><td data-id="1892"><code data-id="1893">dd conv=fdatasync</code></td><td data-id="1894">Quick write benchmark with sync</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== APPENDIX B ===== -->
+    <div data-id="1895" class="section-title-bar" id="appendix-b">
+      <h2 data-id="1896">Appendix B: VM Lab Environment Setup Guide</h2>
+      <p data-id="1897">Step-by-step setup for VirtualBox, KVM/libvirt, and package installation</p>
+    </div>
+
+    <div data-id="1898" class="lab-card">
+      <h3 data-id="1899">VirtualBox Setup (7 Steps)</h3>
+      <ol data-id="1900" class="task-list">
+        <li data-id="1901">Create new VM: Linux, Ubuntu 64-bit, 2 vCPUs, 4 GB RAM</li>
+        <li data-id="1902">Create primary disk (20 GB) for OS installation</li>
+        <li data-id="1903">Add 4 additional virtual disks: Settings → Storage → Controller: SATA → Add Hard Disk → Create (5 GB each, VDI, dynamically allocated)</li>
+        <li data-id="1904">Install OS from ISO</li>
+        <li data-id="1905">Boot and verify disks: <code data-id="1906">lsblk</code> should show <code data-id="1907">sdb</code> through <code data-id="1908">sde</code></li>
+        <li data-id="1909">Install Guest Additions for clipboard/shared folders</li>
+        <li data-id="1910">Take a base snapshot: "Clean Install"</li>
+      </ol>
+    </div>
+
+    <div data-id="1911" class="lab-card">
+      <h3 data-id="1912">KVM/libvirt Setup (4 Steps)</h3>
+      <ol data-id="1913" class="task-list">
+        <li data-id="1914">Create VM with <code data-id="1915">virt-install</code> or <code data-id="1916">virt-manager</code></li>
+        <li data-id="1917">Create additional disks: <code data-id="1918">qemu-img create -f qcow2 /var/lib/libvirt/images/disk{b..e}.qcow2 5G</code></li>
+        <li data-id="1919">Attach each disk: <code data-id="1920">virsh attach-disk vmname /var/lib/libvirt/images/diskb.qcow2 sdb --persistent</code></li>
+        <li data-id="1921">Verify inside VM: <code data-id="1922">lsblk</code></li>
+      </ol>
+    </div>
+
+    <div data-id="1923" class="lab-card">
+      <h3 data-id="1924">Required Packages</h3>
+      <div data-id="1925" class="callout note">
+        <strong data-id="1926">Ubuntu / Debian:</strong><br data-id="1927">
+        <code data-id="1928">sudo apt update && sudo apt install -y lvm2 nfs-common nfs-kernel-server cifs-utils samba autofs sysstat iotop fio blktrace sshfs targetcli-fb open-iscsi gdisk btrfs-progs quota cryptsetup ncdu attr</code>
+      </div>
+      <div data-id="1929" class="callout note mt-3">
+        <strong data-id="1930">Rocky / RHEL / Fedora:</strong><br data-id="1931">
+        <code data-id="1932">sudo dnf install -y lvm2 nfs-utils cifs-utils samba samba-client autofs sysstat iotop fio blktrace sshfs targetcli open-iscsi gdisk btrfs-progs quota cryptsetup ncdu attr</code>
+      </div>
+    </div>
+
+    <div data-id="1933" class="lab-card">
+      <h3 data-id="1934">Post-Installation Checklist</h3>
+      <ol data-id="1935" class="task-list">
+        <li data-id="1936">Verify all 4 extra disks visible: <code data-id="1937">lsblk</code></li>
+        <li data-id="1938">Confirm no partitions on extra disks: <code data-id="1939">fdisk -l /dev/sd{b..e}</code></li>
+        <li data-id="1940">Verify all packages installed: <code data-id="1941">which lvcreate pvs vgs mkfs.xfs iostat fio</code></li>
+        <li data-id="1942">Set root password or configure sudo</li>
+        <li data-id="1943">Disable automatic updates during lab sessions</li>
+        <li data-id="1944">Take snapshot: "Ready for Labs"</li>
+      </ol>
+    </div>
+
+    <!-- ===== APPENDIX C ===== -->
+    <div data-id="1945" class="section-title-bar" id="appendix-c">
+      <h2 data-id="1946">Appendix C: Exam Day Tips</h2>
+      <p data-id="1947">Time management, common traps, verification strategies</p>
+    </div>
+
+    <div data-id="1948" class="lab-card">
+      <h3 data-id="1949">Time Management</h3>
+      <ol data-id="1950" class="task-list">
+        <li data-id="1951">The LFCS exam is 2 hours. Storage = 20% → budget ~24 minutes for storage tasks</li>
+        <li data-id="1952">Read ALL questions first, tackle easiest storage questions first</li>
+        <li data-id="1953">Don't spend more than 5 minutes on any single task — flag and return</li>
+        <li data-id="1954">Reserve last 5 minutes to verify all mounts persist with <code data-id="1955">mount -a</code></li>
+      </ol>
+    </div>
+
+    <div data-id="1956" class="lab-card">
+      <h3 data-id="1957">Common Exam Traps</h3>
+      <div data-id="1958" class="overflow-x-auto">
+        <table data-id="1959" class="ref-table">
+          <thead data-id="1960"><tr data-id="1961"><th data-id="1962">Trap</th><th data-id="1963">How to Avoid</th></tr></thead>
+          <tbody data-id="1964">
+            <tr data-id="1965"><td data-id="1966">Forgetting fstab persistence</td><td data-id="1967">Always add fstab entry. Test with <code data-id="1968">umount</code> then <code data-id="1969">mount -a</code></td></tr>
+            <tr data-id="1970"><td data-id="1971">Device names instead of UUIDs</td><td data-id="1972">Use <code data-id="1973">blkid</code> to get UUID. Use UUID= in fstab always</td></tr>
+            <tr data-id="1974"><td data-id="1975">Missing <code data-id="1976">_netdev</code></td><td data-id="1977">Add to ALL network mounts (NFS, CIFS, iSCSI)</td></tr>
+            <tr data-id="1978"><td data-id="1979">Trying to shrink XFS</td><td data-id="1980">XFS cannot shrink. Only ext4 can be reduced</td></tr>
+            <tr data-id="1981"><td data-id="1982"><code data-id="1983">e2fsck</code> on mounted filesystem</td><td data-id="1984">Always <code data-id="1985">umount</code> first. e2fsck on mounted FS = corruption</td></tr>
+            <tr data-id="1986"><td data-id="1987">Forgetting <code data-id="1988">mkswap</code> after resize</td><td data-id="1989">After <code data-id="1990">lvextend</code> swap, always re-run <code data-id="1991">mkswap</code></td></tr>
+            <tr data-id="1992"><td data-id="1993">Not restarting autofs</td><td data-id="1994"><code data-id="1995">systemctl restart autofs</code> after any config change</td></tr>
+            <tr data-id="1996"><td data-id="1997">Bad fstab causing boot failure</td><td data-id="1998">Use <code data-id="1999">nofail</code> for non-critical mounts. Test with <code data-id="2000">mount -a</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div data-id="2001" class="lab-card">
+      <h3 data-id="2002">Verification Checklist (Before Submitting)</h3>
+      <ol data-id="2003" class="task-list">
+        <li data-id="2004">Run <code data-id="2005">mount -a</code> — no errors means all fstab entries valid</li>
+        <li data-id="2006">Run <code data-id="2007">findmnt --verify</code> — validates fstab syntax</li>
+        <li data-id="2008">Run <code data-id="2009">swapon --show</code> — confirm swap is active</li>
+        <li data-id="2010">Run <code data-id="2011">lvs</code>, <code data-id="2012">vgs</code>, <code data-id="2013">pvs</code> — confirm LVM state</li>
+        <li data-id="2014">Run <code data-id="2015">df -Th</code> — confirm all filesystems mounted with correct types</li>
+        <li data-id="2016">Run <code data-id="2017">blkid</code> — confirm UUIDs match fstab entries</li>
+      </ol>
+    </div>
+
+    <div data-id="2018" class="lab-card">
+      <h3 data-id="2019">Critical Commands to Memorize</h3>
+      <div data-id="2020" class="overflow-x-auto">
+        <table data-id="2021" class="ref-table">
+          <thead data-id="2022"><tr data-id="2023"><th data-id="2024">Category</th><th data-id="2025">Must-Know Commands</th></tr></thead>
+          <tbody data-id="2026">
+            <tr data-id="2027"><td data-id="2028">LVM Workflow</td><td data-id="2029"><code data-id="2030">pvcreate → vgcreate → lvcreate → mkfs → mount → fstab</code></td></tr>
+            <tr data-id="2031"><td data-id="2032">LVM Extend</td><td data-id="2033"><code data-id="2034">lvextend -r -L +SIZE /dev/VG/LV</code></td></tr>
+            <tr data-id="2035"><td data-id="2036">LVM Reduce</td><td data-id="2037"><code data-id="2038">umount → e2fsck -f → resize2fs SIZE → lvreduce -L SIZE</code></td></tr>
+            <tr data-id="2039"><td data-id="2040">Swap Setup</td><td data-id="2041"><code data-id="2042">mkswap → swapon → fstab entry</code></td></tr>
+            <tr data-id="2043"><td data-id="2044">NFS Mount</td><td data-id="2045"><code data-id="2046">mount -t nfs server:/export /mnt + fstab with _netdev</code></td></tr>
+            <tr data-id="2047"><td data-id="2048">CIFS Mount</td><td data-id="2049"><code data-id="2050">mount -t cifs //server/share /mnt -o credentials=FILE</code></td></tr>
+            <tr data-id="2051"><td data-id="2052">Autofs</td><td data-id="2053"><code data-id="2054">auto.master → map file → systemctl restart autofs</code></td></tr>
+            <tr data-id="2055"><td data-id="2056">Troubleshoot</td><td data-id="2057"><code data-id="2058">journalctl -b, dmesg, findmnt --verify, blkid, mount -a</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer data-id="2059" class="text-center py-8 mt-12 border-t border-bg-lighter text-muted text-xs">
+      <p data-id="2060">LFCS Storage Domain — 100 Hands-On Lab Exercises</p>
+      <p data-id="2061" class="mt-1">Made by Copilot</p>
+    </footer>
+
+  </div><!-- end content-area -->
+</div><!-- end main-content -->
+
+<button data-id="2062" id="back-to-top" aria-label="Back to top">
+  <i data-id="2063" data-lucide="arrow-up" class="w-5 h-5"></i>
+</button>
+
+<script>
+lucide.createIcons();
+
+// ===== DATA: Section → Lab ranges =====
+const sections = [
+  { id: 's1', label: 'Section 1: LVM Storage', range: [1, 20] },
+  { id: 's2', label: 'Section 2: Virtual File System', range: [21, 35] },
+  { id: 's3', label: 'Section 3: Filesystems', range: [36, 55] },
+  { id: 's4', label: 'Section 4: Remote & Network', range: [56, 72] },
+  { id: 's5', label: 'Section 5: Swap Space', range: [73, 82] },
+  { id: 's6', label: 'Section 6: Automounters', range: [83, 92] },
+  { id: 's7', label: 'Section 7: Performance', range: [93, 100] }
+];
+
+const labTitles = {
+  1:'Identify Block Devices',2:'Partitions with fdisk',3:'Partitions with gdisk',4:'Initialize PVs',5:'Create a Volume Group',6:'Create Logical Volumes',7:'Filesystems on LVs',8:'Extend a VG',9:'Extend LV (ext4)',10:'Extend LV (XFS)',11:'Extend LV+FS Combined',12:'Reduce LV (ext4)',13:'LV Percentage Alloc',14:'Remove a Logical Volume',15:'Remove PV from VG',16:'Rename VG & LV',17:'LVM Snapshot',18:'Thin Provisioning',19:'Custom PE Size',20:'Full LVM Teardown',
+  21:'Explore /proc',22:'Explore /sys',23:'Kernel Params /proc/sys',24:'Working with tmpfs',25:'devtmpfs and udev',26:'Mount Namespaces',27:'Mount Options',28:'Bind Mounts',29:'Read-Only & Remount',30:'Overlay Filesystem',31:'Loop Devices',32:'/proc/self & /proc/PID',33:'User Quotas',34:'Group Quotas',35:'fstab Audit & Recovery',
+  36:'Create ext4 FS',37:'Create XFS FS',38:'Create Btrfs FS',39:'Create VFAT/FAT32',40:'Labels and UUIDs',41:'Tune ext4 Params',42:'Check/Repair ext4',43:'Check/Repair XFS',44:'Resize ext4',45:'Grow XFS',46:'Mount Manually',47:'Configure fstab',48:'systemd Mount Units',49:'Boot Failure Recovery',50:'Data Recovery',51:'Disk Usage Tools',52:'Managing Inodes',53:'File Attributes',54:'FS Freeze/Unfreeze',55:'FS Troubleshooting',
+  56:'NFS Server Setup',57:'NFS Manual Mount',58:'NFS Persistent Mount',59:'NFS Mount Options',60:'NFS Security',61:'Samba Server Setup',62:'CIFS Manual Mount',63:'CIFS Persistent Mount',64:'CIFS Multiuser',65:'SSHFS',66:'iSCSI Target',67:'iSCSI Initiator',68:'iSCSI Filesystem',69:'Network Block Device',70:'NFS Kerberos',71:'NFS Troubleshoot',72:'CIFS Troubleshoot',
+  73:'Check Swap Config',74:'Swap Partition',75:'Swap File',76:'Remove Swap',77:'Swap Priority',78:'Swap on LVM',79:'Resize Swap LVM',80:'Tune Swappiness',81:'Encrypted Swap',82:'Swap Troubleshoot',
+  83:'Install autofs',84:'Direct Autofs Map',85:'Indirect Autofs Map',86:'Autofs NFS',87:'Autofs CIFS',88:'Wildcard Maps',89:'Executable Maps',90:'Timeout & Debug',91:'systemd automount',92:'Comprehensive Autofs',
+  93:'iostat',94:'iotop',95:'vmstat',96:'sar',97:'blktrace',98:'fio Benchmark',99:'dd Benchmark',100:'Full Perf Analysis'
+};
+
+// ===== POPULATE SIDEBAR =====
+sections.forEach(sec => {
+  const container = document.getElementById('sec-' + sec.id);
+  for (let i = sec.range[0]; i <= sec.range[1]; i++) {
+    const a = document.createElement('a');
+    a.className = 'lab-link';
+    a.dataset.target = 'lab-' + i;
+    a.textContent = 'Lab ' + i + ': ' + (labTitles[i] || '');
+    container.appendChild(a);
+  }
+});
+
+// ===== SIDEBAR TOGGLE =====
+document.querySelectorAll('.section-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const secId = btn.dataset.toggle;
+    const panel = document.getElementById('sec-' + secId);
+    const isOpen = panel.classList.contains('open');
+    panel.classList.toggle('open', !isOpen);
+    btn.classList.toggle('open', !isOpen);
+  });
+});
+
+// ===== LAB LINK CLICKS =====
+document.getElementById('sidebar-nav').addEventListener('click', (e) => {
+  const link = e.target.closest('.lab-link');
+  if (!link) return;
+  const target = document.getElementById(link.dataset.target);
+  if (target) {
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Close mobile sidebar
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebar-overlay').classList.remove('open');
+  }
+});
+
+// ===== SEARCH/FILTER =====
+document.getElementById('search-input-a1b2').addEventListener('input', (e) => {
+  const query = e.target.value.toLowerCase().trim();
+  document.querySelectorAll('.lab-link').forEach(link => {
+    const match = !query || link.textContent.toLowerCase().includes(query);
+    link.style.display = match ? '' : 'none';
+  });
+  // Auto-expand sections with matches
+  if (query) {
+    document.querySelectorAll('.lab-section').forEach(sec => {
+      const hasVisible = Array.from(sec.querySelectorAll('.lab-link')).some(l => l.style.display !== 'none');
+      sec.classList.toggle('open', hasVisible);
+      const btn = sec.previousElementSibling;
+      if (btn) btn.classList.toggle('open', hasVisible);
+    });
+  }
+});
+
+// ===== SCROLL TRACKING =====
+const labElements = [];
+for (let i = 1; i <= 100; i++) {
+  const el = document.getElementById('lab-' + i);
+  if (el) labElements.push({ id: i, el });
+}
+
+const sectionHeaders = [
+  { id: 's1', el: document.getElementById('section-1-header'), label: 'Section 1: LVM Storage' },
+  { id: 's2', el: document.getElementById('section-2-header'), label: 'Section 2: Virtual File System' },
+  { id: 's3', el: document.getElementById('section-3-header'), label: 'Section 3: Filesystems' },
+  { id: 's4', el: document.getElementById('section-4-header'), label: 'Section 4: Remote & Network' },
+  { id: 's5', el: document.getElementById('section-5-header'), label: 'Section 5: Swap Space' },
+  { id: 's6', el: document.getElementById('section-6-header'), label: 'Section 6: Automounters' },
+  { id: 's7', el: document.getElementById('section-7-header'), label: 'Section 7: Performance' }
+];
+
+let ticking = false;
+function onScroll() {
+  if (ticking) return;
+  ticking = true;
+  requestAnimationFrame(() => {
+    const scrollY = window.scrollY + 80;
+    // Find current lab
+    let currentLab = 0;
+    for (let i = labElements.length - 1; i >= 0; i--) {
+      if (labElements[i].el.offsetTop <= scrollY) {
+        currentLab = labElements[i].id;
+        break;
+      }
+    }
+    // Update progress
+    document.getElementById('progress-label').textContent = currentLab > 0 ? 'Lab ' + currentLab + ' of 100' : 'Lab 0 of 100';
+    // Update active sidebar link
+    document.querySelectorAll('.lab-link').forEach(l => l.classList.remove('active'));
+    if (currentLab > 0) {
+      const activeLink = document.querySelector('.lab-link[data-target="lab-' + currentLab + '"]');
+      if (activeLink) {
+        activeLink.classList.add('active');
+        // Ensure visible in sidebar
+        const sidebarNav = document.getElementById('sidebar-nav');
+        const linkRect = activeLink.getBoundingClientRect();
+        const navRect = sidebarNav.getBoundingClientRect();
+        if (linkRect.top < navRect.top || linkRect.bottom > navRect.bottom) {
+          activeLink.scrollIntoView({ block: 'nearest' });
+        }
+      }
+    }
+    // Update section label
+    let currentSection = 'LFCS Storage Labs';
+    for (let i = sectionHeaders.length - 1; i >= 0; i--) {
+      if (sectionHeaders[i].el && sectionHeaders[i].el.offsetTop <= scrollY) {
+        currentSection = sectionHeaders[i].label;
+        break;
+      }
+    }
+    document.getElementById('current-section-label').textContent = currentSection;
+    // Back to top button
+    const btn = document.getElementById('back-to-top');
+    btn.style.display = window.scrollY > 600 ? 'flex' : 'none';
+    ticking = false;
+  });
+}
+window.addEventListener('scroll', onScroll, { passive: true });
+
+// ===== BACK TO TOP =====
+document.getElementById('back-to-top').addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// ===== HAMBURGER MENU =====
+document.getElementById('hamburger').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebar-overlay').classList.add('open');
+});
+document.getElementById('sidebar-overlay').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
+});
+
+// Initial scroll check
+onScroll();
+</script>
+</body>
+</html>
